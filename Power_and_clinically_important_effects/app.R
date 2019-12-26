@@ -28,7 +28,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                   sidebarPanel( 
                     
                     div(p("This app explores the ideas behind frequentist power calculations. The sliders below are used to select the
-                    true populaton parameters of a normally distributed continuous response. 
+                    true population parameters for a normally distributed continuous response. 
                           On the first tab 'Sample size', the required number of subjects is calculated based on the inputs. This information is then used on the 'Operating characteristics' tab where the 
                           operating characteristics of the study are displayed. Finally, on the third tab 'The potential for statistically significant but clinically unimportant results', the relationship between alpha, beta, the Z score and P-Value 
                           are explored using the standard Normal distribution.")),
@@ -142,54 +142,55 @@ server <- shinyServer(function(input, output) {
   
   # --------------------------------------------------------------------------
   # This is where a new sample is instigated only random noise is required to be generated
-  random.sample <- reactive({
-    
-    # Dummy line to trigger off button-press
-    foo <- input$resample
-    
-   # N <- input$N
-    mu1 <- 0 #input$mu1
-    mu2 <- input$mu2
-    sd1 <- input$sd1
-    sd2 <- input$sd1
-    alpha <- input$alpha
-    beta <- input$beta
-  
-    return(list( 
-      mu1=mu1, mu2=mu2, sd1=sd1, sd2=sd2, alpha=alpha, beta=beta     ))
-   }) 
-  
+  # random.sample <- reactive({
+  #   
+  #   # Dummy line to trigger off button-press
+  #   foo <- input$resample
+  #   
+  #  # N <- input$N
+  #   mu1 <- 0 #input$mu1
+  #   mu2 <- input$mu2
+  #   sd1 <- input$sd1
+  #   sd2 <- input$sd1
+  #   alpha <- input$alpha
+  #   beta <- input$beta
+  # 
+  #   return(list( 
+  #     mu1=mu1, mu2=mu2, sd1=sd1, sd2=sd2, alpha=alpha, beta=beta     ))
+  #  }) 
+  # 
   # --------------------------------------------------------------------------
   # Set up the dataset based on the inputs 
   make.regression <- reactive({
     
     #   https://stats.stackexchange.com/questions/28876/difference-between-anova-power-simulation-and-power-calculation
     
-    sample <- random.sample()
+ #   sample <- random.sample()
      
     mu1 <- 0# sample$mu1
-    mu2 <- sample$mu2
-    sd1 <- sample$sd1
-    sd2 <- sample$sd1
-    alpha <- sample$alpha
-    beta <- sample$beta
+    mu2 <- input$mu2
+    sd1 <- input$sd1
+    sd2 <- input$sd1
+    alpha <- input$alpha
+    beta <- input$beta
      
     muDiff  <-  mu2-mu1                  # true difference in means
     
     crit1 <- qnorm(1-as.numeric(alpha/2))
-    
-    (n1 <-n2 <- (2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 ) 
-    
+     
     pow <- pwr::pwr.t.test(d=(mu2-mu1)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample",
                            alternative="two.sided")
     
-    n1 <- n2 <- pow$n
+    # this equation from LSHTM seems to give stable 60.5% but not R canned equation above?
+    n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
+    
+    #n1 <- n2 <- pow$n
     
     x <- seq(mu1-6*sd1, mu2+6*sd2, 0.1)
     
     sigDiff <- sqrt((sd1^2/n1) + (sd2^2/n2))
     
-    se1 <- se2 <- sigDiff   # pooled sd
+    se1 <- se2 <- sigDiff   # pooled se
     
     crit <- mu1 + crit1 * se1
     
@@ -199,7 +200,7 @@ server <- shinyServer(function(input, output) {
                 crit1=crit1,
                 muDiff=muDiff, 
                 alpha=alpha, beta=beta, 
-                mu1=mu1, mu2=mu2 , sd1=sd1, pow=pow#, N=N
+                mu1=mu1, mu2=mu2 , sd1=sd1, pow=pow
                 )) 
     
   })  
@@ -216,22 +217,22 @@ server <- shinyServer(function(input, output) {
   
   output$textWithNumber <- renderText({ 
     
-    A <- make.regression()$mu1
-    B <- make.regression()$mu2
-    C <- make.regression()$crit
-    D <- make.regression()$se1
-    E <- make.regression()$sigDiff
-    FF <- make.regression()$mu1 +  make.regression()$sigDiff
-    FF2 <- make.regression()$mu1 -  make.regression()$sigDiff
+    A <- make.regression()$mu1    # this will be zero
+    B <- make.regression()$mu2    # this is an input
+    C <- make.regression()$crit   # 0 + crit1 * se1, where crit1 is alpha 2 sided input and se1 the pooled SE
+    D <- make.regression()$se1    # pooled SD
+    E <- make.regression()$sigDiff #pooled Sd again
+    FF <-  make.regression()$mu1 +  make.regression()$sigDiff # 0 + pooled SE
+    FF2 <- make.regression()$mu1 -  make.regression()$sigDiff # 0 - pooled SE
     
-    L <- make.regression()$mu1 -  make.regression()$sigDiff * make.regression()$crit1  
-    U <- make.regression()$mu1 +  make.regression()$sigDiff * make.regression()$crit1  
-    V <- make.regression()$mu2 -  make.regression()$sigDiff * make.regression()$crit1  
+    L <- make.regression()$mu1 -  make.regression()$sigDiff * make.regression()$crit1  # 0 - pooled SE x user input alpha level 
+    U <- make.regression()$mu1 +  make.regression()$sigDiff * make.regression()$crit1  #
+    V <- make.regression()$mu2 -  make.regression()$sigDiff * make.regression()$crit1  # mu2 - pooled SE x user input alpha level
     W <- make.regression()$mu2 +  make.regression()$sigDiff * make.regression()$crit1
     
-    X <- make.regression()$beta
-    Y <- make.regression()$alpha
-    N <- make.regression()$n1 
+    X <- make.regression()$beta  # user input 
+    Y <- make.regression()$alpha # user input 
+    N <- make.regression()$n1    # sample size from R's ttest power calculation
     
     if (B>0) {
     
@@ -241,52 +242,54 @@ server <- shinyServer(function(input, output) {
                  "). While the true effect is  "
                  , tags$span(style="color:red", p0(A)) ,
                  ", observed effects anywhere from " 
-                 , tags$span(style="color:red", p1(L)) ,
+                 , tags$span(style="color:red", p1(L)) , ## only true for 95% so alpha 0.05 <- change this? add crosses??*********
                  " to  "
-                 , tags$span(style="color:red", p1(U)) ,
+                 , tags$span(style="color:red", p1(U)) , ## only true for 95% so alpha 0.05?*********
                  " are decently likely to occur. Getting an observed effect of "
-                 , tags$span(style="color:red", p1(FF)) ,
+                 , tags$span(style="color:red", p1(FF)) , # 1 SE up from null
                  ", for example,  is well within this
                                sampling variability and not conclusive evidence the therapy works.
                                The solid red vertical lines are the threshold for
                                rejecting the null hypothesis of no effect.
                                A red vertical line sits at a treatment effect of "
-                 , tags$span(style="color:red", p3(U)) ,
+                 , tags$span(style="color:red", p3(U)) , # based in user input alpha mu + pooled SE * user input 
                  ", above "
-                 , tags$span(style="color:red", p1(100-Y/2*100)) ,
+                 , tags$span(style="color:red", p1(100-Y/2*100)) , # user inputted 2 sided alpha
                  "% of the null (pink) distribution. There is only a "
-                 , tags$span(style="color:red", p1(Y/2*100)) ,
-                 "% chance that a null (no effect) therapy will produce an observed effect above the vertical line. This limits our chance of type I error at alpha= "
-                 , tags$span(style="color:red", p1(Y*100)) ,
-                  "% (two sided, we add both of the red areas together). The green distribution shows the range of likely values when the therapy achieves the hoped for "
-                 , tags$span(style="color:red", p1(B)) ,
+                 , tags$span(style="color:red", p1(Y/2*100)) , # simply alpha user input divided by 2
+                 "% chance that a null (no effect) therapy will produce an observed effect above the vertical line. 
+                 This limits our chance of type I error at alpha= "
+                 , tags$span(style="color:red", p1(Y*100)) , # alpha user input
+                  "% (two sided, we add both of the red areas together). The green distribution shows the range of likely 
+                 values when the therapy achieves the hoped for "
+                 , tags$span(style="color:red", p1(B)) , # alternative user input
                  " point effect. Values anywhere from "
-                 , tags$span(style="color:red", p1(V)) ,
+                 , tags$span(style="color:red", p1(V)) , #  only true for 95% so alpha 0.05 <- change this? add crosses??*********
                  " to  "
-                 , tags$span(style="color:red", p1(W)) ,
+                 , tags$span(style="color:red", p1(W)) , # only true for 95% so alpha 0.05 <- change this? add crosses?*********
                  " are decently likely. Fortunately, if the true effect is "
-                 , tags$span(style="color:red", p1(B)) ,
+                 , tags$span(style="color:red", p1(B)) , # simple user input
                  " points, then we have a "
-                 , tags$span(style="color:red", p1(100-X*100)) ,
+                 , tags$span(style="color:red", p1(100-X*100)) , # power
                  "% chance of getting a value above the vertical line placed at "
-                 , tags$span(style="color:red", p3(U)) ,
+                 , tags$span(style="color:red", p3(U)) ,  #upper threshold of null dist.
                  " and rejecting the null hypothesis. This is our "
-                 , tags$span(style="color:red", p1(100-X*100)) ,
+                 , tags$span(style="color:red", p1(100-X*100)) , # power again
                  "% power. Why did we choose N="
-                 , tags$span(style="color:red", p0(N)) ,
+                 , tags$span(style="color:red", p0(N)) , #from ttest power calculation
                  " per arm? The pink and green distributions get narrower as the sample size increases. N ="
-                 , tags$span(style="color:red", p0(N)) ,
+                 , tags$span(style="color:red", p0(N)) , #see above
                  " is the smallest sample size where we can find a cutoff that simultaneously gives us "
-                 , tags$span(style="color:red", p1(Y*100)) ,
+                 , tags$span(style="color:red", p1(Y*100)) , # alpha user input
                  "% type I error and "
-                 , tags$span(style="color:red", p1(100-X*100)) ,
+                 , tags$span(style="color:red", p1(100-X*100)) , #power
                  "% power. Smaller N results in too much overlap.",
                  
                  "<br><b><br><b> ",
                  "What effect do I need to see in my study to get a two sided P-value of "
-                 , tags$span(style="color:red", p3(Y)) ,
+                 , tags$span(style="color:red", p3(Y)) , #alpha user input
                  " answer: "
-                 , tags$span(style="color:red", p3(C)) ,
+                 , tags$span(style="color:red", p3(C)) , #this is 1 se * pnorm 1-alpha
                  ". That is "
                  , tags$span(style="color:red", p1(C/B*100)) ,
                  "% of the value we were shooting for..."
@@ -301,11 +304,7 @@ server <- shinyServer(function(input, output) {
                  "<br><b><br><b> ",
                  "What effect do I need to see in my study to get p=0.001 two sided, answer: "
                  , tags$span(style="color:red", p3(qnorm(0.001/2,  mean=A, sd=E, lower.tail = FALSE ))),
-                 
-                 
-               
-                 
-                 "")) 
+                "")) 
       
     
     
@@ -391,12 +390,8 @@ server <- shinyServer(function(input, output) {
                    # , tags$span(style="color:red", p3(qnorm(0.001/2,  mean=A, sd=E, lower.tail = FALSE ))),
                    "" ))
       
-      
     }
-    
-    
-    
-  })
+   })
     
     output$textWithNumber1 <- renderText({ 
 
@@ -455,7 +450,7 @@ server <- shinyServer(function(input, output) {
                   , tags$span(style="color:red", 50) ,
                   "% sure of getting p < "
                    , tags$span(style="color:red", p4(2*(1-pnorm(C)))  ),
-                  ". </b> We can learn some of the implications. The estimate of the true effect size, 
+                  ". </b> We can learn some more of the implications. The estimate of the true effect size, 
                   which we 'powered' for (considered the smallest difference of clinical importance) when 
                   what is known as 'statistical significance', here when P < "
                            , tags$span(style="color:red", p2(A)) ,
