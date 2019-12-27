@@ -22,24 +22,25 @@ ui <- fluidPage(theme = shinytheme("journal"),
                 
                 shinyUI(pageWithSidebar(
                   
-                  headerPanel("The relationship between power, alpha, beta and P-Values"),
+                  headerPanel("The relationship between power, alpha, beta, P-Values and clinical importance"),
                   
                   
                   sidebarPanel( 
-                    
-                    div(p("When being introduced to frequentist power calcualtions invariably you will be shown two distributions. 
+                    p(strong("Introduction")),
+                    div(p("When being introduced to frequentist power calculations invariably you will be taught using a figure showing two normal distributions. 
                     If you are not familiar with the properties of distributions the concepts may seem quite strange, 
                     here I try to explain what's going on using RShiny.
                     The sliders below are used to select the
-                    true population parameters for a normally distributed continuous response. 
-                          On the first tab '1 Sample size', the required number of subjects is calculated based on the inputs. 
-                          This information is then used on the '2 Operating characteristics' tab where the 
-                          operating characteristics of the study are displayed. On the third tab 
-                          '3 The potential for statistically significant but clinically unimportant results', 
-                          the relationship between alpha, beta, the Z score and P-Value 
-                          are explored using the standard Normal distribution. Finally the fourth tab '4 Take home'
-                          shows some relationships that are useful 
-                          to remember.")),
+                    true population parameters for a normally distributed continuous response. Though the concepts apply equally to proportions as well. First we will describe the contents of each tab.")),
+                    
+                    div(strong("1 Sample size")),p("On the first tab the required number of subjects for a two arm randomised 1:1 study where we estimate a treatment effect, for example new treatment versus a placebo, calculated based on the inputs. We calculate the power for a T-test procedure. 
+                          This information is then used on the next tab."),
+                    
+                    div(strong("2 Operating characteristics")),p("On this tab the operating characteristics of the study are displayed."),
+                    div(strong("3 The potential for statistically significant but clinically unimportant results")) ,
+                    p("Here the relationship between alpha, beta, the Z score, P-Value and clinical importance
+                          are explored using the standard Normal distribution. Finally on the fourth tab..."),
+                    div(strong("4 Take home"), p("We show some relationships that are useful to remember.")),
                     
                     div(
                       br(),
@@ -50,7 +51,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       
                        
                      br(), br(),  
-                      div(("Select true population parameters")),
+                      div(strong("Select true population parameters")),
                       br(),
 
                        
@@ -94,13 +95,29 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
                       
                         tabPanel("1 Sample size", 
-                                 h3("Two sample T-test calculations"),
-                                 p(strong("With the following inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
-                                        and estimate the sample size required for each group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. 'd' in the output printed below is 
-                                        (Mean treatment effect under alternative hypothesis'- 0)/ standard deviation.
-                                        ")), 
                                  
+                                 h4(htmlOutput("textWithNumber9",) ) ,
+                                 
+                                # h3("Two sample T-test calculations"),
+                                
+                                 # p(strong("With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
+                                 #        and estimate the sample size required for each group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. 'd' in the output printed below is 
+                                 #        (Mean treatment effect under alternative hypothesis'- 0)/ standard deviation.
+                                 #        ")), 
+                                 # 
                                  div( verbatimTextOutput("ssize2")),
+                                
+                                
+                                br(),
+                                
+                                
+                                withMathJax(
+                                  helpText('We have n per group = $$ 2 \\biggl[\\frac{(Z_{1-\\alpha/2} + Z_{\\beta})\\sigma}{\\delta}\\biggr]^2  $$')),
+                                 
+                                withMathJax(
+                                  helpText("Where the symbol delta is the [Mean treatment effect under alternative hypothesis'- 0]. This returns n as")),
+                                
+                                h4(htmlOutput("textWithNumber10",) ) ,
                                  
                      ),
                       
@@ -251,7 +268,7 @@ server <- shinyServer(function(input, output) {
     
     X <- make.regression()$beta  # user input 
     Y <- make.regression()$alpha # user input 
-    N <- make.regression()$n1    # sample size from R's ttest power calculation
+    N <- make.regression()$n1    # sample size  
     
     if (B>0) {
     
@@ -425,6 +442,49 @@ server <- shinyServer(function(input, output) {
     
    })
 
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    output$textWithNumber9 <- renderText({ 
+      
+      HTML(paste0( "With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation (SD)', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
+                                        and estimate the sample size required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. 'd' in the output printed below is 
+                                        (Mean treatment effect under alternative hypothesis'- 0)/ standard deviation. As mentioned the approach also applies to planning a study using a dichotomous outcome (proportions).
+                                        In actual fact I do not use the R canned function shown below but the equation below it for calculation of the required sample size. See P.Armitage, Statistical Methods in Medical Research, P140 4th Edition."))
+      
+    
+    
+    })
+    
+    output$textWithNumber10 <- renderText({ 
+      
+     N <- make.regression()$n1    # sample size 
+      
+      HTML(paste0( "  "
+                   , tags$span(style="color:black", N  ,cex=.3),  
+      
+      "" ))
+      
+      
+    })
+     
+    
+ 
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     output$textWithNumber2 <- renderText({ 
        
       HTML(paste0("Notice on the previous tab changing the inputs did not effect the relationshiip between the two curves.
@@ -881,12 +941,12 @@ server <- shinyServer(function(input, output) {
     
     
     
-  
-    
-    
-    
-    1- pnorm(qnorm(a)+qnorm(b))
-    qnorm(a)/ (qnorm(a)+qnorm(b))
+    # 
+    # 
+    # 
+    # 
+    # 1- pnorm(qnorm(a)+qnorm(b))
+    # qnorm(a)/ (qnorm(a)+qnorm(b))
     
     
   }) 
