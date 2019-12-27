@@ -51,7 +51,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                   "Mean treatment effect under alternative hypothesis",
                                   min=-30, max=30, step=1, value=5, ticks=FALSE),
                       
-                      sliderInput("sd1", "Standard deviation",
+                      sliderInput("sd1", "Standard deviation (SD)",
                                   min = 1, max = 50, step=0.1, value = 20, ticks=FALSE), #c( sqrt(2*20^2/337))
                     
                       
