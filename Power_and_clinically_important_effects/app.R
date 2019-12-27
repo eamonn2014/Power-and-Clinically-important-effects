@@ -33,7 +33,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     The sliders below are used to select the
                     true population parameters for a normally distributed continuous response. Though the concepts apply equally to proportions as well. Firstly we will describe the contents of each tab.")),
                     
-                    div(strong("1 Sample size")),p("On the first tab the required number of subjects for a two arm randomised 1:1 study where we estimate a treatment effect, for example new treatment versus a placebo, calculated based on the inputs. We calculate the power for a T-test procedure. 
+                    div(strong("1 Sample size")),p("On the first tab the required number of subjects for a two arm randomised 1:1 study in which we estimate a treatment effect, for example new treatment versus a placebo, is calculated based on the inputs. We calculate the sample size required for a T-test procedure. 
                           This information is then used on the next tab."),
                     
                     div(strong("2 Operating characteristics")),p("On this tab the operating characteristics of the study are displayed."),
@@ -161,9 +161,10 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       ) ,
                       
                      tabPanel("3 The potential for statistically significant but clinically unimportant results", 
-                               h4(htmlOutput("textWithNumber2",) ) ,
+                               
                                     
                                   div(plotOutput("norm.plot", width=fig.width, height=fig.height)),
+                                  h4(htmlOutput("textWithNumber2",) ) ,
                                   h4(htmlOutput("textWithNumber3",) ) ,
                                   width = 12 ),
                      
@@ -176,7 +177,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                     column(12,
                                     shinyWidgets::sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the associated effect size (orange crosses on x axis of Figure 3):",
 
-                                                                  choices=c(0, 0.000001, 0.00001, 0.0001, 0.001, 0.001189, 0.01, 0.05, 0.10, 0.20,   0.50, 0.75),
+                                                                  choices=c(0, 0.000001, 0.00001, 0.0001, 0.001, 0.001189,0.003429, 0.01, 0.05, 0.10, 0.20,   0.50, 0.75),
 
                                                                   selected=0.01, grid = T, width = '100%'))
 
@@ -509,7 +510,7 @@ server <- shinyServer(function(input, output) {
     
     output$textWithNumber2 <- renderText({ 
        
-      HTML(paste0("Notice on the previous tab changing the inputs did not effect the relationshiip between the two curves.
+      HTML(paste0("Notice on the previous tab changing the inputs did not effect the relationship between the two curves.
                   We can exploit this to help understanding. This means we can refer to one distribution, the standard normal. 
                   This is the Normal distribution with mean 0 and variance 1. Use only the 'alpha' and 'beta' sliders. 
                   The 'Mean treatment effect under alternative hypothesis' and 'Standard deviation' are not needed and have no effect here."))
@@ -641,7 +642,9 @@ server <- shinyServer(function(input, output) {
                   , tags$span(style="color:red", p3(A)) ,
                   " will be "
                   , tags$span(style="color:red", p3(D/C)) ,
-                  " of the value that we initally powered the study to find - but that was the smallest difference considered clinically important to pick up! This proportion is constant for any SD as we have shown and any alternative mean effect, contingent on alpha and beta not changing.
+                  " of the value that we initally powered the study to find - but that was the smallest difference considered
+                  clinically important to pick up! This proportion is constant for any SD as we have shown and any alternative mean effect, 
+                  contingent on alpha and beta not changing. Move the slider above to see the treatment effect for a given P-Value.
                     <br><b><br><b> 
                   If we actually achieve the hoped for effect, the P-Value will be "
                   , tags$span(style="color:red", p6(E)) ,
