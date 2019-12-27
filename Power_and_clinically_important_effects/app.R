@@ -199,7 +199,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                   
                                   fluidRow(
                                     column(12,
-                                    shinyWidgets::sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the effect size (purple cross):",
+                                    shinyWidgets::sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the effect size (orange cross):",
 
                                                                   choices=c(0, 0.000001, 0.00001, 0.0001, 0.001, 0.001189, 0.01, 0.05, 0.10, 0.20,   0.50, 0.75),
 
