@@ -27,14 +27,22 @@ ui <- fluidPage(theme = shinytheme("journal"),
                   
                   sidebarPanel( 
                     
-                    div(p("This app explores the ideas behind frequentist power calculations. The sliders below are used to select the
+                    div(p("When being introduced to frequentist power calcualtions invariably you will be shown two distributions. 
+                    If you are not familiar with the properties of distributions the concepts may seem quite strange, 
+                    here I try to explain what's going on using RShiny.
+                    The sliders below are used to select the
                     true population parameters for a normally distributed continuous response. 
-                          On the first tab 'Sample size', the required number of subjects is calculated based on the inputs. This information is then used on the 'Operating characteristics' tab where the 
-                          operating characteristics of the study are displayed. Finally, on the third tab 'The potential for statistically significant but clinically unimportant results', the relationship between alpha, beta, the Z score and P-Value 
-                          are explored using the standard Normal distribution.")),
+                          On the first tab '1 Sample size', the required number of subjects is calculated based on the inputs. 
+                          This information is then used on the '2 Operating characteristics' tab where the 
+                          operating characteristics of the study are displayed. On the third tab 
+                          '3 The potential for statistically significant but clinically unimportant results', 
+                          the relationship between alpha, beta, the Z score and P-Value 
+                          are explored using the standard Normal distribution. Finally the fourth tab '4 Take home'
+                          shows some relationships that are useful 
+                          to remember.")),
                     
                     div(
-                      
+                      br(),
                   
                       actionButton(inputId='ab1', label="R code here", 
                                    icon = icon("th"), 
@@ -85,7 +93,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                    ")), 
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
                       
-                        tabPanel("Sample size", 
+                        tabPanel("1 Sample size", 
                                  h3("Two sample T-test calculations"),
                                  p(strong("With the following inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
                                         and estimate the sample size required for each group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. 'd' in the output printed below is 
@@ -97,7 +105,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                      ),
                       
                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                      tabPanel("Operating characteristics", 
+                      tabPanel("2 Operating characteristics", 
                                h3("Operating characteristics of frequentist power calculations"),
                               
                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,7 +135,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                          div( verbatimTextOutput("ssize"))
                       ) ,
                       
-                     tabPanel("The potential for statistically significant but clinically unimportant results", 
+                     tabPanel("3 The potential for statistically significant but clinically unimportant results", 
                                h4(htmlOutput("textWithNumber2",) ) ,
                                     
                                   div(plotOutput("norm.plot", width=fig.width, height=fig.height)),
@@ -135,7 +143,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                   width = 12 ),
                      
                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
-                     tabPanel("Take homes", 
+                     tabPanel("4 Take home", 
                             #  h4(htmlOutput("textWithNumber2",) ) ,
                               
                               div(plotOutput("norm.plot1", width=fig.width, height=fig.height)),
@@ -537,17 +545,19 @@ server <- shinyServer(function(input, output) {
       CC <- qnorm(1-.1) + qnorm(1-0.05/2)
       D <-  qnorm(1-A/2)
       E <-  (1-pnorm(C))*2 
-      sd <- input$sd1
+      sd <- input$sd1 
       
  
-      HTML(paste0("Here we can modify the 'Alpha, Type I error', 'Beta, Type II error' and 'Standard deviation'. 
-      First notice changing the standard deviation has no 
+      HTML(paste0("Here we can modify the 'Alpha, Type I error', 'Beta, Type II error' and 'Standard deviation' only. 
+      First notice that changing the standard deviation has no 
                   effect on the relationship between the two distributions. Slide the standard deviation to 1 to see some familiar 
                   Z-scores. The ratio "
                   , tags$span(style="color:red", p2(D*sd)) , "se/" , tags$span(style="color:red", p2(C*sd)) ,
                   "se = " 
                   , tags$span(style="color:red", p3(D/C)) ,
-                  " tells us the effect size when p=0.05 will be "
+                  " tells us that the effect size when the two sided P Value = " 
+                  , tags$span(style="color:red", p3(A)) ,
+                  " will be "
                   , tags$span(style="color:red", p3(D/C)) ,
                   " of the value that we initally powered the study to find - but that was the smallest difference considered clinically important to pick up! This proportion is constant for any SD as we have shown and any alternative mean effect contingent on alpha and beta not changing.
                     <br><b><br><b> 
