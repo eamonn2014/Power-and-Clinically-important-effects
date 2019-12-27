@@ -545,7 +545,7 @@ server <- shinyServer(function(input, output) {
       CC <- qnorm(1-.1) + qnorm(1-0.05/2)
       D <-  qnorm(1-A/2)
       E <-  (1-pnorm(C))*2 
-      sd <- input$sd1 
+      sd <- input$sd1  
       
  
       HTML(paste0("Here we can modify the 'Alpha, Type I error', 'Beta, Type II error' and 'Standard deviation' only. 
@@ -564,7 +564,9 @@ server <- shinyServer(function(input, output) {
                   If we actually achieve the hoped for effect, the P-Value will be "
                   , tags$span(style="color:red", p6(E)) ,
                   ", this is the region of the red distribution, extending in total beyond "
-                  , tags$span(style="color:red", p3(C*sd)) , "se in both directions. Here is some R code: ",
+                  , tags$span(style="color:red", p3(C*sd)) , "se in both directions from the null value. 
+                             <br><b><br><b> 
+                             Here is some R code: ",
                   "<br><b><br><b>",
                    " 2*(1 - pnorm(qnorm("
                   , tags$span(style="color:red", p3(1-A/2)) ,
@@ -573,8 +575,8 @@ server <- shinyServer(function(input, output) {
                   "))) ="
                   , tags$span(style="color:red", p6(E)) ,
                   "<br><b><br><b>",
-                  " and ",
-                  "<br><b><br><b>",
+                  "   ",
+                
                   "qnorm("
                   , tags$span(style="color:red", p3(1-A/2)) ,
                   ")/ (qnorm("
@@ -584,13 +586,7 @@ server <- shinyServer(function(input, output) {
                   ")) ="
                   , tags$span(style="color:red", p3(D/C)) ,
                   
-                  
-                  
-                  # 
-                  # 1- pnorm(qnorm(a)+qnorm(b))
-                  # qnorm(a)/ (qnorm(a)+qnorm(b))
-                  # 
-    
+                   
                   
                   ""
       )) 
