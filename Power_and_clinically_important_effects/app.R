@@ -69,7 +69,15 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       
                       sliderInput("beta", "Beta, Type II error",
                                   min = 0.01, max = .99, step=.01, value = c(0.10 ),ticks=FALSE)
-                    )
+                    ),
+                    
+                    div(p("References:")),  
+                    
+                    tags$a(href = "https://archive.org/details/StatisticalMethodsInMedicalResearch/page/n1", "[1] P.Armitage, Statistical Methods in Medical Research, P140 4th Edition"),
+                    div(p(" ")),
+                    tags$a(href = "https://innovativeclinicaltrial.org/hypothesis-testing-clinically-important-effects-and-do-we-pay-too-much-for-clinical-trial-insurance/", "[2] Kert Viele, Berry Consultants"),
+                    div(p(" ")),
+                    
                   ),
                   
                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~tab panels
@@ -123,7 +131,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       
                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                       tabPanel("2 Operating characteristics", 
-                               h3("Operating characteristics of frequentist power calculations"),
+                              # h3("Operating characteristics of frequentist power calculations"),
                               
                          #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -161,8 +169,51 @@ ui <- fluidPage(theme = shinytheme("journal"),
                      
                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
                      tabPanel("4 Take home", 
-                            #  h4(htmlOutput("textWithNumber2",) ) ,
+
+                          
+                             
+                              #fluidRow(
+                                 
+                                # column(12,
+                                # 
+                                # 
+                                # sliderInput("PV", "Enter a (two-sided) P-Value and see the effect size (purple cross)",
+                                #             min = .00005, max = 1, step=.0005, value = c(0.05 ),ticks=TRUE, width = '100%')),
+                                # 
+                                # column(12,
+                                # 
+                                # shinyWidgets::sliderTextInput("pvalue2","PValue:",
+                                #                               choices=c(0, 0.0001, 0.001, 0.01, 0.1, 0.05, .1, .15, .2, .3, .5),
+                                #                               selected=0.01, grid = T))
+                            
+                                ##
+                                #list(
                               
+                              
+                                  # fluidRow(
+                                  #   column(12,
+                                  #          sliderInput("PV", "Enter a (two-sided) P-Value and see the effect size (purple cross)",
+                                  #                      min = .00005, max = 1, step=.0005, value = c(0.05 ),
+                                  #                      ticks=TRUE, width = '100%'))
+                                  # ),
+                                  
+                                  fluidRow(
+                                    column(12,
+                                    shinyWidgets::sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the effect size (purple cross):",
+
+                                                                  choices=c(0, 0.000001, 0.00001, 0.0001, 0.001, 0.001189, 0.01, 0.05, 0.10, 0.20,   0.50, 0.75),
+
+                                                                  selected=0.01, grid = T, width = '100%'))
+
+                                
+                                ##
+                              ),
+                            
+                            
+                              
+                              
+                            
+                            
                               div(plotOutput("norm.plot1", width=fig.width, height=fig.height)),
                               h4(htmlOutput("textWithNumber4",) ) ,
                               width = 12 )
@@ -217,7 +268,7 @@ server <- shinyServer(function(input, output) {
     pow <- pwr::pwr.t.test(d=(mu2-mu1)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample",
                            alternative="two.sided")
     
-    # this equation from LSHTM seems to give stable 60.5% but not R canned equation above?
+    # this equation from armitage and LSHTM notes seems to give stable 60.5% but not R canned equation above?
     n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
     
     #n1 <- n2 <- pow$n
@@ -283,7 +334,7 @@ server <- shinyServer(function(input, output) {
                  , tags$span(style="color:red", p1(U)) , ## only true for 95% so alpha 0.05?*********
                  " are decently likely to occur. Getting an observed effect of "
                  , tags$span(style="color:red", p1(FF)) , # 1 SE up from null
-                 ", for example,  is well within this
+                 " (purple cross), for example,  is well within this
                                sampling variability and not conclusive evidence the therapy works.
                                The solid red vertical lines are the threshold for
                                rejecting the null hypothesis of no effect.
@@ -319,7 +370,7 @@ server <- shinyServer(function(input, output) {
                  , tags$span(style="color:red", p1(Y*100)) , # alpha user input
                  "% type I error and "
                  , tags$span(style="color:red", p1(100-X*100)) , #power
-                 "% power. Smaller N results in too much overlap.",
+                 "% power, whilst accounting for the SD. Smaller N results in too much overlap.",
                  
                  "<br><b><br><b> ",
                  "What effect do I need to see in my study to get a two sided P-value of "
@@ -355,10 +406,10 @@ server <- shinyServer(function(input, output) {
                    ", observed effects anywhere from " 
                    , tags$span(style="color:red", p1(L)) ,
                    " to  "
-                   , tags$span(style="color:red", p3(U)) ,
+                   , tags$span(style="color:red", p1(U)) ,
                    " are decently likely to occur. Getting an observed effect of "
                    , tags$span(style="color:red", p1(FF2)) ,
-                   ", for example,  is well within this
+                   " (purple cross), for example,  is well within this
                                sampling variability and not conclusive evidence the therapy works.
                                The solid red vertical lines are the threshold for
                                rejecting the null hypothesis of no effect.
@@ -394,7 +445,7 @@ server <- shinyServer(function(input, output) {
                    , tags$span(style="color:red", p1(Y*100)) ,
                    "% type I error and "
                    , tags$span(style="color:red", p1(100-X*100)) ,
-                   "% power. Smaller N results in too much overlap.",
+                   "% power, whilst accounting for the SD. Smaller N results in too much overlap.",
                    
                    "<br><b><br><b> ",
                    "What effect do I need to see in my study to get a two sided P-value of "
@@ -436,7 +487,7 @@ server <- shinyServer(function(input, output) {
                                  when the treatment works as expected (green) and also when the treatment does not work (pink).
                                         Remember we are presenting two scenarios in Figure 1, both cannot occur. The following equation
                                         shows the standard error (SE) calculation used for each scenario, this is also known as the 
-                                        standard deviation of the mean and shows the spread or variation.
+                                        standard deviation of the mean difference and shows the spread or variation around the mean difference.
                                         Therefore the two sample sizes ",HTML(" <em>n1</em>")," and ",HTML(" <em>n2</em>")," 
                      need to be included in the calculation of each sampling distribution."))
     
@@ -450,7 +501,7 @@ server <- shinyServer(function(input, output) {
       HTML(paste0( "With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation (SD)', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
                                         and estimate the sample size required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. 'd' in the output printed below is 
                                         (Mean treatment effect under alternative hypothesis'- 0)/ standard deviation. As mentioned the approach also applies to planning a study using a dichotomous outcome (proportions).
-                                        In actual fact I do not use the R canned function shown below but the equation below it for calculation of the required sample size. See P.Armitage, Statistical Methods in Medical Research, P140 4th Edition."))
+                                        In actual fact I do not use the R canned function shown below but the equation underneath for calculation of the required sample size."))
       
     
     
@@ -619,14 +670,14 @@ server <- shinyServer(function(input, output) {
                   , tags$span(style="color:red", p3(A)) ,
                   " will be "
                   , tags$span(style="color:red", p3(D/C)) ,
-                  " of the value that we initally powered the study to find - but that was the smallest difference considered clinically important to pick up! This proportion is constant for any SD as we have shown and any alternative mean effect contingent on alpha and beta not changing.
+                  " of the value that we initally powered the study to find - but that was the smallest difference considered clinically important to pick up! This proportion is constant for any SD as we have shown and any alternative mean effect, contingent on alpha and beta not changing.
                     <br><b><br><b> 
                   If we actually achieve the hoped for effect, the P-Value will be "
                   , tags$span(style="color:red", p6(E)) ,
                   ", this is the region of the red distribution, extending in total beyond "
                   , tags$span(style="color:red", p3(C*sd)) , "se in both directions from the null value. 
                              <br><b><br><b> 
-                             Here is some R code: ",
+                             Here is some 'R code': ",
                   "<br><b><br><b>",
                    " 2*(1 - pnorm(qnorm("
                   , tags$span(style="color:red", p3(1-A/2)) ,
@@ -759,14 +810,19 @@ server <- shinyServer(function(input, output) {
      text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
      text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
      
-     points(2, 0,        col="darkred", pch=4, cex=3, lwd=3)
-     points(3.019800, 0, col="darkorange", pch=4, cex=3, lwd=3)
-     points(3.584303, 0, col="darkgreen", pch=4, cex=3, lwd=3)
-     points(mu2,      0, col="purple", pch=4, cex=3, lwd=3)
+     
+     # FF <-  make.regression()$mu1 +  make.regression()$sigDiff # 0 + pooled SE
+     # FF2 <- make.regression()$mu1 -  make.regression()$sigDiff # 0 - pooled SE
+     # L <- make.regression()$mu1 -  make.regression()$sigDiff * make.regression()$crit1  # 0 - pooled SE x user input alpha level 
+     # U <- make.regression()$mu1 +  make.regression()$sigDiff * make.regression()$crit1 
+     
+     #points(mu1 + crit1*se1, 0, col="darkorange", pch=4, cex=3, lwd=3)
+     #points(mu1 - crit1*se1, 0, col="darkorange", pch=4, cex=3, lwd=3)
+      points(mu1 + sigDiff,      0, col="purple",     pch=4, cex=3, lwd=3) 
      
      legend(x=X11, Y*1 ,  "Legend:",
             legend=c(
-               expression(paste("Power (1-",beta,")")),
+              expression(paste("Power (1-",beta,")")),
               expression(paste("Type II error (",beta,")   ")),
               expression(paste("Type I error (",alpha,")"))),
             fill=c("green","#004987","red"),
@@ -848,10 +904,12 @@ server <- shinyServer(function(input, output) {
          text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
          text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
          
-         points(2, 0,        col="darkred", pch=4, cex=3, lwd=3)
-         points(3.019800, 0, col="darkorange", pch=4, cex=3, lwd=3)
-         points(3.584303, 0, col="darkgreen", pch=4, cex=3, lwd=3)
-         points(mu2,      0, col="purple", pch=4, cex=3, lwd=3)
+         # expected values and example observed effect
+         # points(2, 0,        col="darkred", pch=4, cex=3, lwd=3)
+         # points(3.019800, 0, col="darkorange", pch=4, cex=3, lwd=3)
+         # points(3.584303, 0, col="darkgreen", pch=4, cex=3, lwd=3)
+         # points(mu2,      0, col="purple", pch=4, cex=3, lwd=3)
+         points(mu1 - sigDiff,      0, col="purple",     pch=4, cex=3, lwd=3) 
          
          legend(x=X11, Y*1 ,  "Legend:",
                 legend=c(
@@ -873,11 +931,19 @@ server <- shinyServer(function(input, output) {
   
   #---------------------------------------------------------------------------
   # take homes tab
+  #output$value <- renderText({ input$PV })
+  # pvalue <- reactive({
+  #    input$PV
+  # })
+  # 
+  
   output$norm.plot1 <- renderPlot({ 
      
     sd <- input$sd1
     A <-  input$alpha
     B <-  input$beta
+    #PV<-  input$PV
+    pvalue2<-  input$pvalue2
     
     a <- 1-A/2
     b <- 1-B
@@ -939,8 +1005,18 @@ server <- shinyServer(function(input, output) {
     text(x=   (sd*qnorm(a)+sd*qnorm(b))/2 , y=.36*fact,  labels=paste0(" ", 
                                               p2(sd*qnorm(a)+qnorm(b)*sd), "se"),cex= cex1)
     
+   
+    # zz <- NULL
+    # zz <- qnorm(1- PV/2)*sd
+    # points(zz,      0, col="purple",     pch=4, cex=3, lwd=3) 
+    # points(-zz,      0, col="purple",     pch=4, cex=3, lwd=3) 
     
+    zz <- qnorm(1- pvalue2/2)*sd
+    points(zz,      0, col="orange",     pch=4, cex=3, lwd=3) 
+    points(-zz,      0, col="orange",     pch=4, cex=3, lwd=3) 
     
+    # zz <- 1-pnorm(EV)
+    # points(zz,      0, col="blue",     pch=4, cex=3, lwd=3) 
     # 
     # 
     # 
@@ -1051,10 +1127,10 @@ server <- shinyServer(function(input, output) {
        text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
        text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
        
-       points(2, 0,        col="darkred", pch=4, cex=3, lwd=3)
-       points(3.019800, 0, col="darkorange", pch=4, cex=3, lwd=3)
-       points(3.584303, 0, col="darkgreen", pch=4, cex=3, lwd=3)
-       points(mu2,      0, col="purple", pch=4, cex=3, lwd=3)
+       # points(2, 0,        col="darkred", pch=4, cex=3, lwd=3)
+       # points(3.019800, 0, col="darkorange", pch=4, cex=3, lwd=3)
+       # points(3.584303, 0, col="darkgreen", pch=4, cex=3, lwd=3)
+       # points(mu2,      0, col="purple", pch=4, cex=3, lwd=3)
        
        legend(x=X11, Y*1 ,  "Legend:",
               legend=c(
