@@ -1,56 +1,56 @@
 
 
-mu1 <- null# sample$mu1
-mu2 <- mu2
-sd1 <- sd2<- sd
-alpha <- .05
-beta <- .1
-
-muDiff  <-  mu2-mu1                  # true difference in means
-
-crit1 <- qnorm(1-as.numeric(alpha/2))
-
-power.t.test(  delta = mu2, sd = sd, sig.level = null.05,
-             power = .9,
-             type = c("two.sample" ),
-             alternative = c("two.sided"),
-             strict = FALSE, tol = .Machine$double.eps^null.25)
-
-pow <- pwr::pwr.t.test(d=(mu2-mu1)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample",
-                       alternative="two.sided")
-
-
-n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
-
-#n1 <- n2 <- pow$n
- 
-#n1 <- ceiling(n1)
-
-
-sigDiff <- sqrt((sd1^2/n1) + (sd2^2/n2))
-
+# mu1 <- null# sample$mu1
+# mu2 <- mu2
+# sd1 <- sd2<- sd
+# alpha <- .05
+# beta <- .1
+# 
+# muDiff  <-  mu2-mu1                  # true difference in means
+# 
+# crit1 <- qnorm(1-as.numeric(alpha/2))
+# 
+# power.t.test(  delta = mu2, sd = sd, sig.level = null.05,
+#              power = .9,
+#              type = c("two.sample" ),
+#              alternative = c("two.sided"),
+#              strict = FALSE, tol = .Machine$double.eps^null.25)
+# 
 # pow <- pwr::pwr.t.test(d=(mu2-mu1)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample",
 #                        alternative="two.sided")
-
-se1 <- se2 <- sigDiff   # pooled se
-
-crit <- mu1 + crit1 * se1
-
-#U <- null +  sigDiff *  crit1  #
-
-
-##this wont change
-
-1-pnorm(qnorm(1-beta) + qnorm(1-alpha/2))
-
-qnorm(1-alpha/2)/ (qnorm(1-beta) + qnorm(1-alpha/2))
-
-##
-
-ab <- qnorm(1-beta) + qnorm(1-alpha/2)
-
-mu1 + ab *se1
-mu1 + qnorm(1-alpha/2) *se1
+# 
+# 
+# n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
+# 
+# #n1 <- n2 <- pow$n
+#  
+# #n1 <- ceiling(n1)
+# 
+# 
+# sigDiff <- sqrt((sd1^2/n1) + (sd2^2/n2))
+# 
+# # pow <- pwr::pwr.t.test(d=(mu2-mu1)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample",
+# #                        alternative="two.sided")
+# 
+# se1 <- se2 <- sigDiff   # pooled se
+# 
+# crit <- mu1 + crit1 * se1
+# 
+# #U <- null +  sigDiff *  crit1  #
+# 
+# 
+# ##this wont change
+# 
+# 1-pnorm(qnorm(1-beta) + qnorm(1-alpha/2))
+# 
+# qnorm(1-alpha/2)/ (qnorm(1-beta) + qnorm(1-alpha/2))
+# 
+# ##
+# 
+# ab <- qnorm(1-beta) + qnorm(1-alpha/2)
+# 
+# mu1 + ab *se1
+# mu1 + qnorm(1-alpha/2) *se1
 
 
 # check result via simulation~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

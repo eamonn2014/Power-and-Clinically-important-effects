@@ -132,7 +132,18 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                     
                                   div(plotOutput("norm.plot", width=fig.width, height=fig.height)),
                                   h4(htmlOutput("textWithNumber3",) ) ,
-                                  width = 12 )
+                                  width = 12 ),
+                     
+                     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+                     tabPanel("Take homes", 
+                            #  h4(htmlOutput("textWithNumber2",) ) ,
+                              
+                              div(plotOutput("norm.plot1", width=fig.width, height=fig.height)),
+                              h4(htmlOutput("textWithNumber4",) ) ,
+                              width = 12 )
+                     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+                     
+                     
                                 
                     )))
                 )
@@ -516,6 +527,64 @@ server <- shinyServer(function(input, output) {
                     )) 
     })
     
+    
+    ##take homes tab
+    output$textWithNumber4 <- renderText({ 
+      
+      A <-  input$alpha
+      B <-  input$beta
+      C <-  qnorm(1-B) +  qnorm(1-A/2)
+      CC <- qnorm(1-.1) + qnorm(1-0.05/2)
+      D <-  qnorm(1-A/2)
+      E <-  (1-pnorm(C))*2 
+      sd <- input$sd1
+      
+ 
+      HTML(paste0("Here we can modify the 'Alpha, Type I error', 'Beta, Type II error' and 'Standard deviation'. 
+      First notice changing the standard deviation has no 
+                  effect on the relationship between the two distributions. Slide the standard deviation to 1 to see some familiar 
+                  Z-scores. The ratio "
+                  , tags$span(style="color:red", p2(D*sd)) , "se/" , tags$span(style="color:red", p2(C*sd)) ,
+                  "se = " 
+                  , tags$span(style="color:red", p3(D/C)) ,
+                  " tells us the effect size when p=0.05 will be "
+                  , tags$span(style="color:red", p3(D/C)) ,
+                  " of the value that we initally powered the study to find - but that was the smallest difference considered clinically important to pick up! This proportion is constant for any SD as we have shown and any alternative mean effect contingent on alpha and beta not changing.
+                    <br><b><br><b> 
+                  If we actually achieve the hoped for effect, the P-Value will be "
+                  , tags$span(style="color:red", p6(E)) ,
+                  ", this is the region of the red distribution, extending in total beyond "
+                  , tags$span(style="color:red", p3(C*sd)) , "se in both directions. Here is some R code: ",
+                  "<br><b><br><b>",
+                   " 2*(1 - pnorm(qnorm("
+                  , tags$span(style="color:red", p3(1-A/2)) ,
+                  ")+qnorm("
+                  , tags$span(style="color:red", p3(1-B)) ,
+                  "))) ="
+                  , tags$span(style="color:red", p6(E)) ,
+                  "<br><b><br><b>",
+                  " and ",
+                  "<br><b><br><b>",
+                  "qnorm("
+                  , tags$span(style="color:red", p3(1-A/2)) ,
+                  ")/ (qnorm("
+                  , tags$span(style="color:red", p3(1-A/2)) ,
+                  ")+qnorm("
+                  , tags$span(style="color:red", p3(1-B)) ,
+                  ")) ="
+                  , tags$span(style="color:red", p3(D/C)) ,
+                  
+                  
+                  
+                  # 
+                  # 1- pnorm(qnorm(a)+qnorm(b))
+                  # qnorm(a)/ (qnorm(a)+qnorm(b))
+                  # 
+    
+                  
+                  ""
+      )) 
+    })
  
    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -603,7 +672,7 @@ server <- shinyServer(function(input, output) {
      # type II error area, beta
      polygon(x = c(lower,                           xxx,  crit),
              y = c(0 , dnorm(mean=mu2, sd=se2,      xxx),    0),
-             col="#004987")
+             col="forestgreen")
   
    
       par(oma=c(0,0,0,0))
@@ -699,7 +768,7 @@ server <- shinyServer(function(input, output) {
       #type II error area, beta
          polygon(x = c(crit2,                           x0,  upper),
                 y = c(0 , dnorm(mean=mu2, sd=se2,      x0),    0),
-                 col="#004987")
+                 col="forestgreen")
 
          
          # rejecting line and sample point
@@ -735,6 +804,88 @@ server <- shinyServer(function(input, output) {
    
     
   })
+  
+  #---------------------------------------------------------------------------
+  # take homes tab
+  output$norm.plot1 <- renderPlot({ 
+     
+    sd <- input$sd1
+    A <-  input$alpha
+    B <-  input$beta
+    
+    a <- 1-A/2
+    b <- 1-B
+    
+    mu2 <- qnorm(a)*sd+qnorm(b)*sd
+    u975 <- qnorm(a)*(sd)
+    cex1 <- 1
+    lower = -6*sd
+    upper = 7*sd
+    x <- seq(-6*sd, 7*sd, 0.1)
+    
+    
+    num <- dnorm(x, mean =0, sd= 1)
+    y <- dnorm(x, mean =0, sd= sd)
+    fact <- 1/(max(num)/max(y))
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    curve(dnorm(x, mean =0, sd= sd), xlim=c(-4*sd,7*sd),
+          bty="n",yaxt="n",lwd=2, # xaxt="n", 
+          col='red',
+          ylab='',xlab='Treatment Effect', 
+          main=paste0("           "))
+    
+    curve(dnorm(x, mean =  mu2, sd=sd), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+    
+    abline(v= u975,          col="blue",  lwd=1,  lty=3)
+    abline(v= mu2, col="blue",  lwd=1,  lty=3)
+    abline(v=0,                  col="blue", lwd=.5, lty=3)  
+    
+    gap=0.001
+    
+    xx <-    seq(  qnorm(a)*sd, upper,  by=gap)
+    xxx <-    seq(  lower, qnorm(a)*sd,  by=gap)
+    
+    polygon(x = c(qnorm(a)*sd,                       xx,  upper),
+            y = c(0 , dnorm(mean=0, sd=sd,     xx),     0),
+            col="red")
+    
+    #type II error area, beta
+    polygon(x = c(lower,                           xxx,  qnorm(a)*sd),
+            y = c(0 , dnorm(mean=mu2, sd=sd,      xxx),    0),
+            col="forestgreen")
+    
+    # +/-se
+    text(x=0,y=.26*fact,  labels=paste0("se = +/- ",sd,""),cex= cex1)
+    arrows( 0, .24*fact,  sd, .24*fact, col = 1:3, code=2)
+    arrows( 0, .24*fact, -sd, .24*fact, col = 1:3)
+    
+    # typeI
+    arrows(0, .3*fact, u975, .3*fact, col = "red")
+    text(x=u975/2, y=.32*fact,  labels=paste0(" ", p2(u975), "se"),cex= cex1)
+    
+    # typeII
+    arrows(qnorm(a)*sd+qnorm(b)*sd, .26*fact, qnorm(a)*sd, .26*fact, col = "forestgreen", lwd=1.5)
+    text(x= (sd*qnorm(a)+sd*qnorm(b)/2), y=.24*fact,  labels=paste0(" ", p2(qnorm(b)*sd), "se"),cex= cex1)
+    
+    # total
+    arrows( 0, .35*fact, sd*qnorm(a)+qnorm(b)*sd, .35*fact, col = 1:3)
+    text(x=   (sd*qnorm(a)+sd*qnorm(b))/2 , y=.36*fact,  labels=paste0(" ", 
+                                              p2(sd*qnorm(a)+qnorm(b)*sd), "se"),cex= cex1)
+    
+    
+    
+  
+    
+    
+    
+    1- pnorm(qnorm(a)+qnorm(b))
+    qnorm(a)/ (qnorm(a)+qnorm(b))
+    
+    
+  }) 
+   
+  
   #---------------------------------------------------------------------------
   # standard normal
     
@@ -813,7 +964,7 @@ server <- shinyServer(function(input, output) {
        # # type II error area, beta
        polygon(x = c(lower,                           xy,  crita),
                 y = c(0 , dnorm(mean=mu2, sd=se2,      xy),    0),
-                col="#004987")
+                col="forestgreen")
 
        
        par(oma=c(0,0,0,0))
