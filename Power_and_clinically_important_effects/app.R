@@ -31,7 +31,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     If you are not familiar with the properties of distributions the concepts may seem quite strange, 
                     here I try to explain what's going on using RShiny.
                     The sliders below are used to select the
-                    true population parameters for a normally distributed continuous response. Though the concepts apply equally to proportions as well. First we will describe the contents of each tab.")),
+                    true population parameters for a normally distributed continuous response. Though the concepts apply equally to proportions as well. Firstly we will describe the contents of each tab.")),
                     
                     div(strong("1 Sample size")),p("On the first tab the required number of subjects for a two arm randomised 1:1 study where we estimate a treatment effect, for example new treatment versus a placebo, calculated based on the inputs. We calculate the power for a T-test procedure. 
                           This information is then used on the next tab."),
@@ -40,7 +40,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     div(strong("3 The potential for statistically significant but clinically unimportant results")) ,
                     p("Here the relationship between alpha, beta, the Z score, P-Value and clinical importance
                           are explored using the standard Normal distribution. Finally on the fourth tab..."),
-                    div(strong("4 Take home"), p("We show some relationships that are useful to remember.")),
+                    div(strong("4 Take home messages"), p("We show some relationships that are useful to remember.")),
                     
                     div(
                       br(),
@@ -113,20 +113,20 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                  #        (Mean treatment effect under alternative hypothesis'- 0)/ standard deviation.
                                  #        ")), 
                                  # 
-                                 div( verbatimTextOutput("ssize2")),
+                                 
                                 
                                 
                                 br(),
                                 
                                 
                                 withMathJax(
-                                  helpText('We have n per group = $$ 2 \\biggl[\\frac{(Z_{1-\\alpha/2} + Z_{\\beta})\\sigma}{\\delta}\\biggr]^2  $$')),
+                                  helpText('We have n per group determined using $$ 2 \\biggl[\\frac{(Z_{1-\\alpha/2} + Z_{\\beta})\\sigma}{\\delta}\\biggr]^2  $$')),
                                  
                                 withMathJax(
                                   helpText("Where the symbol delta is the [Mean treatment effect under alternative hypothesis'- 0]. This returns n as")),
                                 
                                 h4(htmlOutput("textWithNumber10",) ) ,
-                                 
+                                div( verbatimTextOutput("ssize2"))
                      ),
                       
                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -168,53 +168,25 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                   width = 12 ),
                      
                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
-                     tabPanel("4 Take home", 
+                     tabPanel("4 Take home messages", 
 
-                          
-                             
-                              #fluidRow(
-                                 
-                                # column(12,
-                                # 
-                                # 
-                                # sliderInput("PV", "Enter a (two-sided) P-Value and see the effect size (purple cross)",
-                                #             min = .00005, max = 1, step=.0005, value = c(0.05 ),ticks=TRUE, width = '100%')),
-                                # 
-                                # column(12,
-                                # 
-                                # shinyWidgets::sliderTextInput("pvalue2","PValue:",
-                                #                               choices=c(0, 0.0001, 0.001, 0.01, 0.1, 0.05, .1, .15, .2, .3, .5),
-                                #                               selected=0.01, grid = T))
-                            
-                                ##
-                                #list(
-                              
-                              
-                                  # fluidRow(
-                                  #   column(12,
-                                  #          sliderInput("PV", "Enter a (two-sided) P-Value and see the effect size (purple cross)",
-                                  #                      min = .00005, max = 1, step=.0005, value = c(0.05 ),
-                                  #                      ticks=TRUE, width = '100%'))
-                                  # ),
+                              div(plotOutput("norm.plot1", width=fig.width, height=fig.height)),
                                   
                                   fluidRow(
                                     column(12,
-                                    shinyWidgets::sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the effect size (orange cross):",
+                                    shinyWidgets::sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the associated effect size (orange crosses on x axis of Figure 3):",
 
                                                                   choices=c(0, 0.000001, 0.00001, 0.0001, 0.001, 0.001189, 0.01, 0.05, 0.10, 0.20,   0.50, 0.75),
 
                                                                   selected=0.01, grid = T, width = '100%'))
 
                                 
-                                ##
+                                
                               ),
                             
                             
-                              
-                              
                             
                             
-                              div(plotOutput("norm.plot1", width=fig.width, height=fig.height)),
                               h4(htmlOutput("textWithNumber4",) ) ,
                               width = 12 )
                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
@@ -499,9 +471,8 @@ server <- shinyServer(function(input, output) {
     output$textWithNumber9 <- renderText({ 
       
       HTML(paste0( "With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation (SD)', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
-                                        and estimate the sample size required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. 'd' in the output printed below is 
-                                        (Mean treatment effect under alternative hypothesis'- 0)/ standard deviation. As mentioned the approach also applies to planning a study using a dichotomous outcome (proportions).
-                                        In actual fact I do not use the R canned function shown below but the equation underneath for calculation of the required sample size."))
+                                        and estimate the sample size required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. As mentioned the approach also applies to planning a study using a study where the interest is in proportions.
+                                        In actual fact we use the equation shown below for calculation of the required sample size [1]. For interest R power function for a T-test is also shown at the bottom."))
       
     
     
@@ -965,7 +936,8 @@ server <- shinyServer(function(input, output) {
           bty="n",yaxt="n",lwd=2, # xaxt="n", 
           col='red',
           ylab='',xlab='Treatment Effect', 
-          main=paste0("           "))
+          main=paste0("Figure 3: Sampling distribution of the null and alternative treatment effects (standard error of the mean difference between the two randomised groups).\nUnder the null hypothesis and under alternative hypothesis, showing the relative relationships."))         
+ 
     
     curve(dnorm(x, mean =  mu2, sd=sd), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
     
