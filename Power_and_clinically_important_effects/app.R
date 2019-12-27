@@ -27,14 +27,18 @@ ui <- fluidPage(theme = shinytheme("journal"),
                   
                   sidebarPanel( 
                     p(strong("Introduction")),
-                    div(p("When being introduced to frequentist power calculations invariably you will be taught using a figure showing two normal distributions. 
+                    div(p("When being introduced to frequentist power calculations invariably you will be taught using a figure showing 
+                    two normal distributions. 
                     If you are not familiar with the properties of distributions the concepts may seem quite strange, 
                     here I try to explain what's going on using RShiny.
                     The sliders below are used to select the
-                    true population parameters for a normally distributed continuous response. Though the concepts apply equally to proportions as well. Firstly we will describe the contents of each tab.")),
+                    true population parameters for a normally distributed continuous response. Though the concepts apply equally to 
+                          proportions as well. Firstly we will describe the contents of each tab.")),
                     
-                    div(strong("1 Sample size")),p("On the first tab the required number of subjects for a two arm randomised 1:1 study in which we estimate a treatment effect, for example new treatment versus a placebo, is calculated based on the inputs. We calculate the sample size required for a T-test procedure. 
-                          This information is then used on the next tab."),
+                    div(strong("1 Sample size")),p("On the first tab the required number of subjects is calculated based on the inputs 
+                    for a two arm study, randomised 1:1, 
+                     in which we estimate a treatment effect, for example for a new treatment versus a placebo.
+                    We calculate the sample size required for a T-test procedure. This information is then used on the next tab."),
                     
                     div(strong("2 Operating characteristics")),p("On this tab the operating characteristics of the study are displayed."),
                     div(strong("3 The potential for statistically significant but clinically unimportant results")) ,
@@ -472,7 +476,7 @@ server <- shinyServer(function(input, output) {
     output$textWithNumber9 <- renderText({ 
       
       HTML(paste0( "With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation (SD)', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
-                                        and estimate the sample size required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. As mentioned the approach also applies to planning a study using a study where the interest is in proportions.
+                                        and estimate the number of subjects required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. As mentioned the approach also applies to planning a study using a study where the interest is in proportions.
                                         In actual fact we use the equation shown below for calculation of the required sample size [1]. For interest R power function for a T-test is also shown at the bottom."))
       
     
@@ -648,7 +652,7 @@ server <- shinyServer(function(input, output) {
                     <br><b><br><b> 
                   If we actually achieve the hoped for effect, the P-Value will be "
                   , tags$span(style="color:red", p6(E)) ,
-                  ", this is the region of the red distribution, extending in total beyond "
+                  ", this is the region of the red distribution extending beyond "
                   , tags$span(style="color:red", p3(C*sd)) , "se in both directions from the null value. 
                              <br><b><br><b> 
                              Here is some 'R code': ",
@@ -799,7 +803,7 @@ server <- shinyServer(function(input, output) {
               expression(paste("Power (1-",beta,")")),
               expression(paste("Type II error (",beta,")   ")),
               expression(paste("Type I error (",alpha,")"))),
-            fill=c("green","#004987","red"),
+            fill=c("green","forestgreen","red"),
              cex=1)
       
      
@@ -890,7 +894,7 @@ server <- shinyServer(function(input, output) {
                   expression(paste("Power (1-",beta,")")),
                   expression(paste("Type II error (",beta,")   ")),
                   expression(paste("Type I error (",alpha,")"))),
-                fill=c("green","#004987","red"),
+                fill=c("green","forestgreen","red"),
                 cex=1)
        
        
@@ -963,7 +967,7 @@ server <- shinyServer(function(input, output) {
             col="forestgreen")
     
     # +/-se
-    text(x=0,y=.26*fact,  labels=paste0("se = +/- ",sd,""),cex= cex1)
+    text(x=0,y=.26*fact,  labels=paste0("se =  +/- ",sd,""),cex= cex1)
     arrows( 0, .24*fact,  sd, .24*fact, col = 1:3, code=2)
     arrows( 0, .24*fact, -sd, .24*fact, col = 1:3)
     
