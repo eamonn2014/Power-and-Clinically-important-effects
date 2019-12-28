@@ -32,7 +32,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     If you are not familiar with the properties of distributions the concepts may seem quite strange, 
                     here I try to explain what's going on using RShiny.
                     The sliders below are used to select the
-                    true population parameters for a normally distributed continuous response. Though the concepts apply equally to 
+                    true population parameters for a normally distributed continuous response and the probabilities for making two types of error. Though the concepts apply equally to 
                           proportions as well. Firstly we will describe the contents of each tab.")),
                     
                     div(strong("1 Sample size")),p("On the first tab the required number of subjects is calculated based on the inputs 
@@ -43,7 +43,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     div(strong("2 Operating characteristics")),p("On this tab the operating characteristics of the study are displayed."),
                     div(strong("3 The potential for statistically significant but clinically unimportant results")) ,
                     p("Here the relationship between alpha, beta, the Z score, P-Value and clinical importance
-                          are explored using the standard Normal distribution. Finally on the fourth tab..."),
+                          are explored using the standard normal distribution. Finally on the fourth tab..."),
                     div(strong("4 Take home messages"), p("We show some relationships that are useful to remember.")),
                     
                     div(
@@ -55,7 +55,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       
                        
                      br(), br(),  
-                      div(strong("Select true population parameters")),
+                      div(strong("Select true population parameters and probability of errors:")),
                       br(),
 
                        
@@ -72,7 +72,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                   min = 0.001, max = .5, step=.001, value = c(0.05 ),ticks=FALSE),
                       
                       sliderInput("beta", "Beta, Type II error",
-                                  min = 0.01, max = .99, step=.01, value = c(0.10 ),ticks=FALSE)
+                                  min = 0.01, max = .5, step=.01, value = c(0.10 ),ticks=FALSE)  # limit to 0.5 otherwise need to code to explain
                     ),
                     
                     div(p("References:")),  
@@ -324,7 +324,7 @@ server <- shinyServer(function(input, output) {
                  "% chance that a null (no effect) therapy will produce an observed effect above the vertical line. 
                  This limits our chance of type I error at alpha= "
                  , tags$span(style="color:red", p1(Y*100)) , # alpha user input
-                  "% (two sided, we add both of the red areas together). The green distribution shows the range of likely 
+                  "% (two sided, we add both of the red areas together).<br><b><br><b> The green distribution shows the range of likely 
                  values when the therapy achieves the hoped for "
                  , tags$span(style="color:red", p1(B)) , # alternative user input
                  " point effect. Values anywhere from "
@@ -339,7 +339,7 @@ server <- shinyServer(function(input, output) {
                  , tags$span(style="color:red", p3(U)) ,  #upper threshold of null dist.
                  " and rejecting the null hypothesis. This is our "
                  , tags$span(style="color:red", p1(100-X*100)) , # power again
-                 "% power. Why did we choose N="
+                 "% power. <br><b><br><b>Why did we choose N="
                  , tags$span(style="color:red", p0(N)) , #from ttest power calculation
                  " per arm? The pink and green distributions get narrower as the sample size increases. N ="
                  , tags$span(style="color:red", p0(N)) , #see above
@@ -399,7 +399,7 @@ server <- shinyServer(function(input, output) {
                    "% chance that a null (no effect) therapy will produce an observed effect below the vertical line. 
                    This limits our chance of type I error at alpha= "
                    , tags$span(style="color:red", p1(Y*100)) ,
-                   "% (two sided, we add both of the red areas together). The green distribution shows the range of
+                   "% (two sided, we add both of the red areas together). <br><b><br><b>The green distribution shows the range of
                    likely values when the therapy achieves the hoped for "
                    , tags$span(style="color:red", p1(B)) ,
                    " point effect. Values anywhere from "
@@ -414,7 +414,7 @@ server <- shinyServer(function(input, output) {
                    , tags$span(style="color:red", p3(L)) ,
                    " and rejecting the null hypothesis. This is our "
                    , tags$span(style="color:red", p1(100-X*100)) ,
-                   "% power. Why did we choose N="
+                   "% power. <br><b><br><b>Why did we choose N="
                    , tags$span(style="color:red", p0(N)) ,
                    " per arm? The pink and green distributions get narrower as the sample size increases. N ="
                    , tags$span(style="color:red", p0(N)) ,
@@ -475,9 +475,9 @@ server <- shinyServer(function(input, output) {
     
     output$textWithNumber9 <- renderText({ 
       
-      HTML(paste0( "With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation (SD)', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
-                                        and estimate the number of subjects required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. As mentioned the approach also applies to planning a study using a study where the interest is in proportions.
-                                        In actual fact we use the equation shown below for calculation of the required sample size [1]. For interest R power function for a T-test is also shown at the bottom."))
+      HTML(paste0( "With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation (SD)', Alpha, ('Type I error') and 'Beta, ('Type II error'), we perform a sample size calculation 
+                                        and estimate the number of subjects required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. As mentioned the approach also applies to planning a study where the interest is in proportions.
+                                        We use the equation shown below for calculation of the required sample size [1]. For interest R power function for a T-test is also shown at the bottom."))
       
     
     
@@ -516,7 +516,7 @@ server <- shinyServer(function(input, output) {
        
       HTML(paste0("Notice on the previous tab changing the inputs did not effect the relationship between the two curves.
                   We can exploit this to help understanding. This means we can refer to one distribution, the standard normal. 
-                  This is the Normal distribution with mean 0 and variance 1. Use only the 'alpha' and 'beta' sliders. 
+                  This is the normal distribution with mean 0 and variance 1. Use only the 'alpha' and 'beta' sliders. 
                   The 'Mean treatment effect under alternative hypothesis' and 'Standard deviation' are not needed and have no effect here."))
         })
    
@@ -558,9 +558,9 @@ server <- shinyServer(function(input, output) {
                    , tags$span(style="color:red", p4(2*(1-pnorm(C)))  ),
                   ". </b> We can learn some more of the implications. The estimate of the true effect size, 
                   which we 'powered' for (considered the smallest difference of clinical importance) when 
-                  what is known as 'statistical significance', here when P < "
+                  what is known as 'statistical significance' is reached, here, and conventionally for many studies, when P < "
                            , tags$span(style="color:red", p2(A)) ,
-                  " is reached, will be smaller even if the treatment works as expected due to sampling variation",
+                  " will be smaller if the treatment works as expected, due to sampling variation",
                   "<br><b><br><b> ",
                   
                   "The effect size at which we attain a two-sided P-value of " 
@@ -646,7 +646,7 @@ server <- shinyServer(function(input, output) {
                   , tags$span(style="color:red", p3(A)) ,
                   " will be "
                   , tags$span(style="color:red", p3(D/C)) ,
-                  " of the value that we initally powered the study to find - but that was the smallest difference considered
+                  " times the value that we initally powered the study to find - but that was the smallest difference considered
                   clinically important to pick up! This proportion is constant for any SD as we have shown and any alternative mean effect, 
                   contingent on alpha and beta not changing. Move the slider above to see the treatment effect for a given P-Value.
                     <br><b><br><b> 
@@ -737,7 +737,7 @@ server <- shinyServer(function(input, output) {
            #             (standard error of the mean difference between the two randomised groups).\nUnder the null hypothesis, 
            #             mean difference = ",mu1," & SE = ",p2(se1),", under alternative hypothesis, mean difference = ",mu2," & SE = ",p2(se2),".\n 
            #             This requires N per group = ",p0(n1),", to have power= ",1-beta," and alpha two-sided = ",alpha,""))
-     main=paste0("Figure 1: Sampling distribution of the null and alternative treatment effects (standard error of the mean difference between the two randomised groups).\nUnder the null hypothesis, mean difference = ",mu1," & SE = ",p2(se1),", under alternative hypothesis, mean difference = ",mu2," & SE = ",p2(se2),".\n This requires N per group = ",p0(n1),", to have power= ",1-beta," and alpha two-sided = ",alpha,""))
+     main=paste0("Figure 1: Sampling distribution of the null and alternative treatment effects (mean difference between the two randomised groups).\nUnder the null hypothesis, mean difference = ",mu1," & SE = ",p2(se1),", under alternative hypothesis, mean difference = ",mu2," & SE = ",p2(se2),".\n This requires N per group = ",p0(n1),", to have power= ",1-beta," and alpha two-sided = ",alpha,""))
   
      # and the green shows the distribution of observed effect when the therapy truly has our hoped for effect. 
      curve(dnorm(x, mean =mu2, sd=se2), lwd=2, add=TRUE , xlab='Observed Treatment Effect', col="green")
@@ -836,7 +836,7 @@ server <- shinyServer(function(input, output) {
              bty="n",yaxt="n",lwd=2,  #xaxt="n",
              col='red',
              ylab='',xlab='Observed Treatment Effect', 
-             main=paste0("Figure 1: Sampling distribution of the null and alternative treatment effects (standard error of the mean difference between the two randomised groups).\nUnder the null hypothesis, mean difference = ",mu1," & SE = ",p2(se1),", under alternative hypothesis, mean difference = ",mu2," & SE = ",p2(se2),".\n This requires N per group = ",p0(n1),", to have power= ",1-beta," and alpha two-sided = ",alpha,""))
+             main=paste0("Figure 1: Sampling distribution of the null and alternative treatment effects (mean difference between the two randomised groups).\nUnder the null hypothesis, mean difference = ",mu1," & SE = ",p2(se1),", under alternative hypothesis, mean difference = ",mu2," & SE = ",p2(se2),".\n This requires N per group = ",p0(n1),", to have power= ",1-beta," and alpha two-sided = ",alpha,""))
        
        # and the green shows the distribution of observed effect when the therapy truly has our hoped for effect.
        curve(dnorm(x, mean =mu2, sd=se2), lwd=2, add=TRUE , xlab='Observed Treatment Effect', col="green")
@@ -943,7 +943,7 @@ server <- shinyServer(function(input, output) {
           bty="n",yaxt="n",lwd=2, # xaxt="n", 
           col='red',
           ylab='',xlab='Treatment Effect', 
-          main=paste0("Figure 3: Sampling distribution of the null and alternative treatment effects (standard error of the mean difference between the two randomised groups).\nUnder the null hypothesis and under alternative hypothesis, showing the relative relationships."))         
+          main=paste0("Figure 3: Sampling distribution of the null and alternative treatment effects (mean difference between the two randomised groups).\nUnder the null hypothesis and under the alternative hypothesis, the relative relationships."))         
  
     
     curve(dnorm(x, mean =  mu2, sd=sd), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
@@ -956,10 +956,18 @@ server <- shinyServer(function(input, output) {
     
     xx <-    seq(  qnorm(a)*sd, upper,  by=gap)
     xxx <-    seq(  lower, qnorm(a)*sd,  by=gap)
+    xxxx <-    seq(  lower, -qnorm(a)*sd,  by=gap)
     
     polygon(x = c(qnorm(a)*sd,                       xx,  upper),
             y = c(0 , dnorm(mean=0, sd=sd,     xx),     0),
             col="red")
+    
+    polygon(x = c(lower,                       xxxx,  -qnorm(a)*sd),
+            y = c(0 , dnorm(mean=0, sd=sd,     xxxx),     0),
+            col="red")
+    
+    
+    
     
     #type II error area, beta
     polygon(x = c(lower,                           xxx,  qnorm(a)*sd),
@@ -1055,7 +1063,7 @@ server <- shinyServer(function(input, output) {
              bty="n",yaxt="n",lwd=2,  #xaxt="n",
              col='red',
              ylab='',xlab='Observed Treatment Effect',
-             main=paste0("Figure 2: Standard Normal sampling distribution of the null and alternative treatment effects. Power= ",1-beta," and alpha two-sided = ",alpha,"\nUnder the null hypothesis, mean difference = ",p2(mu1)," & SE = ",p2(se1),", under alternative hypothesis, mean difference = ",p2(mu2)," & SE = ",p2(se2),""))
+             main=paste0("Figure 2: Standard normal sampling distribution of the null and alternative treatment effects. Power= ",1-beta," and alpha two-sided = ",alpha,"\nUnder the null hypothesis, mean difference = ",p2(mu1)," & SE = ",p2(se1),", under alternative hypothesis, mean difference = ",p2(mu2)," & SE = ",p2(se2),""))
        
        # and the green shows the distribution of observed effect when the therapy truly has our hoped for effect.
        curve(dnorm(x, mean =mu2, sd=se2), lwd=2, add=TRUE , xlab='Observed Treatment Effect', col="green")
