@@ -106,6 +106,6 @@ median(replicate(sims, t.test(rnorm(n,null,sd),rnorm(n,5.076*fact,sd), conf.leve
 ###############################################################
 # first tab results
  
-
-
-
+x <- replicate(sims, t.test(rnorm(n,null,sd),rnorm(n,mu2,sd), conf.level=.95, alternative="two.sided"))
+mean(x["p.value",]<0.05)
+median(unlist(x["p.value",]))

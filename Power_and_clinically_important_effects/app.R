@@ -198,17 +198,12 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
                       tabPanel("5 Check results using simulation", 
                                
-                                 actionButton("resample", "Simulate a new sample"),
-                                 br(),
-                               p('Look left at the true population parameters, 
-                                   the ',strong('SD') ,'below is the Normal distribution SD and follows 
-                                   from the ',strong('log-normal standard deviation,'), 'the', strong('Mean') ,'is 
-                                   transformed to the Normal distribution from that shown left 
-                                   ', strong('log-normal mean.') ,'The', strong('Difference') ,'is the hypothesised difference of importance: the', strong('log of delta,'),' 
-                                   the', strong('Patients in one arm') ,' is that selected on the left. 
-                                   Based on these inputs simulation is used to determine the',strong('power.'),
-                                 'This result also takes into account the' ,strong('expected missing/non evaluable'),'selection. 
-                             Click the ',strong('Simulate a new sample'),' button for another repeat of the experiment.'),
+                                 actionButton("resample", "Perform another simulation"),
+                                 br(),br(),
+                               p('Look left at the true population parameters, which we print below. We run the experiment 999 times 
+                               and perform a T-test each time, collecting P-Values from which we can get an estimate of'
+                                 , strong("'Power'") ," and the distribution of P-Values" , strong("'Median.P.Value'") , 'are obtained, Click the 
+                                 ',strong('Perform another simulation'),' button to repeat the simulation.'),
                                br(),
                                
                                 
@@ -1166,7 +1161,7 @@ server <- shinyServer(function(input, output) {
     
    sample <- random.sample()
      
-    sims=199
+    sims <- 999
     mu1 <- 0  
     mu2 <- input$mu2
     sd1 <- input$sd1
@@ -1180,13 +1175,12 @@ server <- shinyServer(function(input, output) {
     
     n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
     
-      x <- replicate(sims, t.test(rnorm(n1,mu1,sd=sd1),rnorm(n2,mu2,sd=sd1), conf.level=1-alpha, alternative="two.sided"))
-     meanp <- mean(x["p.value",]<0.05)
-     medp <- median(unlist(x["p.value",]))
+    x <- replicate(sims, t.test(rnorm(n1,mu1,sd=sd1),rnorm(n2,mu2,sd=sd1), conf.level=1-alpha, alternative="two.sided"))
+    meanp <- mean(x["p.value",]<0.05)
+    medp <- median(unlist(x["p.value",]))
     
-    
-     d <- as.data.frame(cbind(meanp = c(meanp) , medp=medp) )
-     names(d) <- c("Mean P-Value", "Median P-Value")
+    d <- as.data.frame(cbind( alpha=alpha, beta=beta, meand=muDiff, sd=sd1,n1=n1, meanp = meanp , medp=medp) )
+    names(d) <- c( "Alpha", "Beta", "Mean diff.", "Common SD in each group","N per group", "Power", "Median P-Value")
       
     return(list(d=d))
   }) 
@@ -1199,7 +1193,7 @@ server <- shinyServer(function(input, output) {
     
     data.frame(d)
     
-  }, digits = 6)
+  }, digits = c(6 ))
     
   
  
