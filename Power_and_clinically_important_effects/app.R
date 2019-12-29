@@ -136,7 +136,6 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                       tabPanel("2 Operating characteristics", 
                                # h3("Operating characteristics of frequentist power calculations"),
-                               
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                
@@ -146,8 +145,8 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                h4(htmlOutput("textWithNumber1",) ),
                                
                                p("$$\\begin{align*}
-                      \\text{Standard error of treatment effect} = \\sqrt{\\left({\\frac{ \\sigma_1^2}{n_1}  + \\frac{ \\sigma_2^2}{n_2} }\\right)}   \\\\
-                      \\end{align*}$$"),
+                                \\text{Standard error of treatment effect} = \\sqrt{\\left({\\frac{ \\sigma_1^2}{n_1}  + \\frac{ \\sigma_2^2}{n_2} }\\right)}   \\\\
+                                \\end{align*}$$"),
                                p(""),
                                
                                h4(htmlOutput("textWithNumber",) ),
@@ -156,7 +155,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                # for some reason this is need or abpve will not render!
                                withMathJax(
                                  helpText('
-                            $$   $$')),  
+                                $$   $$')),  
                                
                                
                                p(strong("")),
@@ -165,8 +164,6 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       ) ,
                       
                       tabPanel("3 The potential for statistically significant but clinically unimportant results", 
-                               
-                               
                                div(plotOutput("norm.plot", width=fig.width, height=fig.height)),
                                h4(htmlOutput("textWithNumber2",) ) ,
                                h4(htmlOutput("textWithNumber3",) ) ,
@@ -184,14 +181,8 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                                                       choices=c(0, 0.000001, 0.00001, 0.0001, 0.001, 0.001189,0.003429, 0.01, 0.05, 0.10, 0.20,   0.50, 0.75),
                                                                       
                                                                       selected=0.01, grid = T, width = '100%'))
-                                 
-                                 
-                                 
-                               ),
-                               
-                               
-                               
-                               
+                                                                ),
+                              
                                h4(htmlOutput("textWithNumber4",) ) ,
                                width = 12 ),
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
@@ -200,14 +191,12 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                
                                  actionButton("resample", "Perform another simulation"),
                                  br(),br(),
-                               p('Look left at the true population parameters, which we print below. We run the experiment 999 times 
+                               p('Look left at the true population parameters, which we print below. We run the experiment 4999 times 
                                and perform a T-test each time, collecting P-Values from which we can get an estimate of'
                                  , strong("'Power'") ," and the distribution of P-Values" , strong("'Median.P.Value'.") , 'Click the 
                                  ',strong('Perform another simulation'),' button to repeat the simulation.'),
                                br(),
-                               
-                                
-                             tableOutput("table")  
+                               tableOutput("table")  
                                )
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
                       
@@ -391,12 +380,9 @@ server <- shinyServer(function(input, output) {
                    , tags$span(style="color:red", p3(qnorm(0.001/2,  mean=A, sd=E, lower.tail = FALSE ))),
                    "")) 
       
+  } else if (B<0) {
       
-      
-    } else if (B<0) {
-      
-      
-      HTML(paste0( "The distribution in pink, shows the distribution of observed treatment effects when the
+       HTML(paste0( "The distribution in pink, shows the distribution of observed treatment effects when the
     therapy doesn't work (true effect is: "
                    , tags$span(style="color:red", p0(A)) ,
                    "). While the true effect is  "
@@ -477,6 +463,7 @@ server <- shinyServer(function(input, output) {
       
     }
   })
+  # --------------------------------------------------------------------------
   
   output$textWithNumber1 <- renderText({ 
     
@@ -503,6 +490,7 @@ server <- shinyServer(function(input, output) {
     
     
   })
+  # --------------------------------------------------------------------------
   
   output$textWithNumber10 <- renderText({ 
     
@@ -512,25 +500,8 @@ server <- shinyServer(function(input, output) {
                  , tags$span(style="color:black", N  ,cex=.3),  
                  
                  "" ))
-    
-    
-  })
-  
-  
-  
-  
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+      })
+  # --------------------------------------------------------------------------
   
   
   output$textWithNumber2 <- renderText({ 
@@ -598,8 +569,6 @@ server <- shinyServer(function(input, output) {
                 , tags$span(style="color:red", p1(D/C*100)) ,
                 " % of the true value.",
                 "<br><b><br><b> ",
-                
-                
                 "The P-value (two-sided) that we attain if the treatment estimate matches the alternative mean difference " 
                 , tags$span(style="color:red", p3(C)) ,
                 " is " 
@@ -636,15 +605,12 @@ server <- shinyServer(function(input, output) {
                 # "<br><b><br><b> ",
                 #  "What effect do I need to see in my study to get P=0.001 two sided, answer: "
                 # , tags$span(style="color:red", p3(qnorm(0.001/2,  mean=0, sd=1, lower.tail = FALSE ))),
-                
-                
-                
-                ""
+               ""
     )) 
   })
   
-  
-  ##take homes tab
+  # --------------------------------------------------------------------------
+  # take homes tab
   output$textWithNumber4 <- renderText({ 
     
     A <-  input$alpha
@@ -809,14 +775,7 @@ server <- shinyServer(function(input, output) {
       text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
       text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
       
-      
-      # FF <-  make.regression()$mu1 +  make.regression()$sigDiff # 0 + pooled SE
-      # FF2 <- make.regression()$mu1 -  make.regression()$sigDiff # 0 - pooled SE
-      # L <- make.regression()$mu1 -  make.regression()$sigDiff * make.regression()$crit1  # 0 - pooled SE x user input alpha level 
-      # U <- make.regression()$mu1 +  make.regression()$sigDiff * make.regression()$crit1 
-      
-      #points(mu1 + crit1*se1, 0, col="darkorange", pch=4, cex=3, lwd=3)
-      #points(mu1 - crit1*se1, 0, col="darkorange", pch=4, cex=3, lwd=3)
+       
       points(mu1 + sigDiff,      0, col="purple",     pch=4, cex=3, lwd=3) 
       
       legend(x=X11, Y*1 ,  "Legend:",
@@ -902,12 +861,7 @@ server <- shinyServer(function(input, output) {
       text(x=X1,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
       text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
       text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
-      
-      # expected values and example observed effect
-      # points(2, 0,        col="darkred", pch=4, cex=3, lwd=3)
-      # points(3.019800, 0, col="darkorange", pch=4, cex=3, lwd=3)
-      # points(3.584303, 0, col="darkgreen", pch=4, cex=3, lwd=3)
-      # points(mu2,      0, col="purple", pch=4, cex=3, lwd=3)
+       
       points(mu1 - sigDiff,      0, col="purple",     pch=4, cex=3, lwd=3) 
       
       legend(x=X11, Y*1 ,  "Legend:",
@@ -918,24 +872,12 @@ server <- shinyServer(function(input, output) {
              fill=c("green","forestgreen","red"),
              cex=1)
       
-      
-      
-      
-      
-    }  
-    
-    
-    
+     }  
+ 
   })
   
   #---------------------------------------------------------------------------
   # take homes tab
-  #output$value <- renderText({ input$PV })
-  # pvalue <- reactive({
-  #    input$PV
-  # })
-  # 
-  
   output$norm.plot1 <- renderPlot({ 
     
     sd <- input$sd1
@@ -986,10 +928,6 @@ server <- shinyServer(function(input, output) {
     polygon(x = c(lower,                       xxxx,  -qnorm(a)*sd),
             y = c(0 , dnorm(mean=0, sd=sd,     xxxx),     0),
             col="red")
-    
-    
-    
-    
     #type II error area, beta
     polygon(x = c(lower,                           xxx,  qnorm(a)*sd),
             y = c(0 , dnorm(mean=mu2, sd=sd,      xxx),    0),
@@ -1013,43 +951,23 @@ server <- shinyServer(function(input, output) {
     text(x=   (sd*qnorm(a)+sd*qnorm(b))/2 , y=.36*fact,  labels=paste0(" ", 
                                                                        p2(sd*qnorm(a)+qnorm(b)*sd), "se"),cex= cex1)
     
-    
-    # zz <- NULL
-    # zz <- qnorm(1- PV/2)*sd
-    # points(zz,      0, col="purple",     pch=4, cex=3, lwd=3) 
-    # points(-zz,      0, col="purple",     pch=4, cex=3, lwd=3) 
-    
+     
     zz <- qnorm(1- pvalue2/2)*sd
     points(zz,      0, col="orange",     pch=4, cex=3, lwd=3) 
     points(-zz,      0, col="orange",     pch=4, cex=3, lwd=3) 
-    
-    # zz <- 1-pnorm(EV)
-    # points(zz,      0, col="blue",     pch=4, cex=3, lwd=3) 
-    # 
-    # 
-    # 
-    # 
-    # 1- pnorm(qnorm(a)+qnorm(b))
-    # qnorm(a)/ (qnorm(a)+qnorm(b))
-    
-    
+     
   }) 
   
   
   #---------------------------------------------------------------------------
   # standard normal
-  
-  ############################
-  
+  ###########################
   output$norm.plot <- renderPlot({ 
     
     mu1=0
     sd1=se1=1
     se1=se2=1
     
-    #mu2 <- input$mu99
-    # beta <- input$beta99
-    # alpha <- input$alpha99
     beta <- input$beta
     alpha <- input$alpha
     crit1 <- qnorm(1-as.numeric(alpha/2))
@@ -1134,11 +1052,7 @@ server <- shinyServer(function(input, output) {
     text(x=X1,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
     text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
     text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
-    
-    # points(2, 0,        col="darkred", pch=4, cex=3, lwd=3)
-    # points(3.019800, 0, col="darkorange", pch=4, cex=3, lwd=3)
-    # points(3.584303, 0, col="darkgreen", pch=4, cex=3, lwd=3)
-    # points(mu2,      0, col="purple", pch=4, cex=3, lwd=3)
+     
     
     legend(x=X11, Y*1 ,  "Legend:",
            legend=c(
@@ -1147,14 +1061,10 @@ server <- shinyServer(function(input, output) {
              expression(paste("Type I error (",alpha,")"))),
            fill=c("green","#004987","red"),
            cex=1)
-    
-    
-    
+
   }) 
   
   # --------------------------------------------------------------------------
-  
-  
   # Dummy line to trigger off button-press
   
   simulate <- reactive({
