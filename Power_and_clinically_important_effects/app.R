@@ -202,7 +202,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                  br(),br(),
                                p('Look left at the true population parameters, which we print below. We run the experiment 999 times 
                                and perform a T-test each time, collecting P-Values from which we can get an estimate of'
-                                 , strong("'Power'") ," and the distribution of P-Values" , strong("'Median.P.Value'") , 'are obtained, Click the 
+                                 , strong("'Power'") ," and the distribution of P-Values" , strong("'Median.P.Value'.") , 'Click the 
                                  ',strong('Perform another simulation'),' button to repeat the simulation.'),
                                br(),
                                
@@ -1161,7 +1161,7 @@ server <- shinyServer(function(input, output) {
     
    sample <- random.sample()
      
-    sims <- 999
+    sims <- 4999
     mu1 <- 0  
     mu2 <- input$mu2
     sd1 <- input$sd1
@@ -1173,16 +1173,31 @@ server <- shinyServer(function(input, output) {
     
     muDiff  <-  mu2-mu1                  # true difference in means
     
-    n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
+   # n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
     
-    x <- replicate(sims, t.test(rnorm(n1,mu1,sd=sd1),rnorm(n2,mu2,sd=sd1), conf.level=1-alpha, alternative="two.sided"))
-    meanp <- mean(x["p.value",]<0.05)
+    pow<-pwr::pwr.t.test(d=(muDiff)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample", alternative="two.sided")
+    n1  <- n2 <- pow$n
+    
+    x <- replicate(sims, 
+                   t.test(rnorm(n1,mu1,sd=sd1),
+                          rnorm(n2,mu2,sd=sd1), 
+                          conf.level=1-alpha, alternative="two.sided"))
+    
+    meanp <- mean(x["p.value",]<0.05)  #power
+    
     medp <- median(unlist(x["p.value",]))
     
-    d <- as.data.frame(cbind( alpha=alpha, beta=beta, meand=muDiff, sd=sd1,n1=n1, meanp = meanp , medp=medp) )
-    names(d) <- c( "Alpha", "Beta", "Mean diff.", "Common SD in each group","N per group", "Power", "Median P-Value")
+    theory <- 2*(1 - pnorm(crit1+qnorm(1-beta))) # expected pvalue
+    
+    d <- as.data.frame(cbind( alpha=alpha, beta=beta, meand=muDiff, sd=sd1,n1=n1, theory=theory, meanp = meanp , medp=medp) )
+    
+    namez <- c( "Alpha", "Beta", "Mean diff.", "Common SD in each group", "N per group", "Expected P-value", 
+                "Simulated Power", "Simulated Median P-Value")
       
+    names(d) <- namez
+    
     return(list(d=d))
+    
   }) 
   ##################################################
   # https://stackoverflow.com/questions/57890921/how-do-i-stop-rendertable-from-defaulting-to-2-decimal-places
@@ -1192,11 +1207,12 @@ server <- shinyServer(function(input, output) {
     d <- (simulate()$d  )
     
     data.frame(d)
-    
-  }, digits = c(6 ))
-    
-  
  
+    #plyr::rename(alpha = "Alpha")
+ 
+    
+    }, digits = c(6 ), colnames = TRUE)
+    
   # --------------------------------------------------------------------------
   
   
