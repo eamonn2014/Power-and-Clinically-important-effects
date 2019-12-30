@@ -974,7 +974,7 @@ server <- shinyServer(function(input, output) {
     crit2 <- qnorm(1-as.numeric(beta))   #power
     
     # z of distibution alpha tresholds
-    crita <-  mu1 + crit1 * se1  # how many ses above mean
+    crita <-  mu1 + crit1 * se1          # how many ses above mean
     mu2 <- critb <- crita + crit2        # how many ses above crit
     # ranges for polygons, remember this is not N(0,1)
     
