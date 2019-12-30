@@ -110,19 +110,8 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                
                                h4(htmlOutput("textWithNumber9",) ) ,
                                
-                               # h3("Two sample T-test calculations"),
-                               
-                               # p(strong("With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation', Alpha ('Type I error') and Beta ('Type II error'), we perform a sample size calculation 
-                               #        and estimate the sample size required for each group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. 'd' in the output printed below is 
-                               #        (Mean treatment effect under alternative hypothesis'- 0)/ standard deviation.
-                               #        ")), 
-                               # 
-                               
-                               
-                               
                                br(),
-                               
-                               
+
                                withMathJax(
                                  helpText('We have n per group determined using $$ 2 \\biggl[\\frac{(Z_{1-\\alpha/2} + Z_{\\beta})\\sigma}{\\delta}\\biggr]^2  $$')),
                                
@@ -137,8 +126,6 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       tabPanel("2 Operating characteristics", 
                                # h3("Operating characteristics of frequentist power calculations"),
                                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                               
                                div(plotOutput("reg.plot", width=fig.width, height=fig.height)),  
                                
                                #https://stackoverflow.com/questions/39250200/rshiny-textoutput-and-paragraph-on-same-line
@@ -156,7 +143,6 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                withMathJax(
                                  helpText('
                                 $$   $$')),  
-                               
                                
                                p(strong("")),
                                
@@ -199,8 +185,6 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                tableOutput("table")  
                                )
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-                      
-                      
                     )))
                 )
 )
@@ -478,7 +462,6 @@ server <- shinyServer(function(input, output) {
     
   })
   
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   output$textWithNumber9 <- renderText({ 
@@ -486,8 +469,6 @@ server <- shinyServer(function(input, output) {
     HTML(paste0( "With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation (SD)', Alpha, ('Type I error') and 'Beta, ('Type II error'), we perform a sample size calculation 
                                         and estimate the number of subjects required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. As mentioned the approach also applies to planning a study where the interest is in proportions.
                                         We use the equation shown below for calculation of the required sample size [1]. For interest R power function for a T-test is also shown at the bottom."))
-    
-    
     
   })
   # --------------------------------------------------------------------------
@@ -554,7 +535,6 @@ server <- shinyServer(function(input, output) {
                 , tags$span(style="color:red", p2(A)) ,
                 " will be smaller if the treatment works as expected, due to sampling variation",
                 "<br><b><br><b> ",
-                
                 "The effect size at which we attain a two-sided P-value of " 
                 , tags$span(style="color:red", A) ,
                 " is " 
@@ -621,7 +601,6 @@ server <- shinyServer(function(input, output) {
     E <-  (1-pnorm(C))*2 
     sd <- input$sd1  
     
-    
     HTML(paste0("Here we can modify the 'Alpha, Type I error', 'Beta, Type II error' and 'Standard deviation' only. 
       First notice that changing the standard deviation has no 
                   effect on the relationship between the two distributions. Slide the standard deviation to 1 to see some familiar 
@@ -652,7 +631,6 @@ server <- shinyServer(function(input, output) {
                 , tags$span(style="color:red", p6(E)) ,
                 "<br><b><br><b>",
                 "   ",
-                
                 "qnorm("
                 , tags$span(style="color:red", p3(1-A/2)) ,
                 ")/ (qnorm("
@@ -661,9 +639,7 @@ server <- shinyServer(function(input, output) {
                 , tags$span(style="color:red", p3(1-B)) ,
                 ")) ="
                 , tags$span(style="color:red", p3(D/C)) ,
-                
-                
-                
+
                 ""
     )) 
   })
@@ -951,13 +927,11 @@ server <- shinyServer(function(input, output) {
     text(x=   (sd*qnorm(a)+sd*qnorm(b))/2 , y=.36*fact,  labels=paste0(" ", 
                                                                        p2(sd*qnorm(a)+qnorm(b)*sd), "se"),cex= cex1)
     
-     
     zz <- qnorm(1- pvalue2/2)*sd
     points(zz,      0, col="orange",     pch=4, cex=3, lwd=3) 
     points(-zz,      0, col="orange",     pch=4, cex=3, lwd=3) 
      
   }) 
-  
   
   #---------------------------------------------------------------------------
   # standard normal
@@ -1118,14 +1092,10 @@ server <- shinyServer(function(input, output) {
     
     data.frame(d)
  
-    #plyr::rename(alpha = "Alpha")
- 
-    
     }, digits = c(6 ), colnames = TRUE)
     
   # --------------------------------------------------------------------------
-  
-  
+
 })
 # Run the application 
 shinyApp(ui = ui, server = server)
