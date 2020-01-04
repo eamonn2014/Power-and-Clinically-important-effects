@@ -1,10 +1,12 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rshiny ideas from on https://gallery.shinyapps.io/multi_regression/
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(DT)
+#library(DT)
 library(shiny)
-library(nlme)
-library(VCA)
+#library(nlme)
+#library(VCA)
+library(shinyWidgets)#
+library(pwr)
 options(max.print=1000000)
 fig.width <- 1200
 fig.height <- 450
@@ -60,14 +62,14 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     p("Here the relationship between alpha, beta, the Z score, P-Value and clinical importance
                           are explored using the standard normal distribution."),
                     div(strong("4 Take home messages"), p("We show some relationships that are useful to remember.")),
-                    div(strong("5 Check results using simulation"), p("Finally we perform simulations to check the results.")),
+                   # div(strong("5 Check results using simulation"), p("Finally we perform simulations to check the results.")),
                     
                     div(
                       br(),
                       
                       actionButton(inputId='ab1', label="R code here", 
                                    icon = icon("th"), 
-                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Three-level-nested-variance-components-analysis2/master/2levelnested/app.R', '_blank')"),
+                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Power-and-Clinically-important-effects/master/Power_and_clinically_important_effects/app.R', '_blank')"),
                       
                       
                       br(), br(),  
@@ -78,10 +80,10 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       
                       sliderInput("mu2",
                                   "Mean treatment effect under alternative hypothesis",
-                                  min=-30, max=30, step=1, value=5, ticks=FALSE),
+                                  min=-30, max=30, step=1, value=3, ticks=FALSE),
                       
                       sliderInput("sd1", "Standard deviation (SD)",
-                                  min = 1, max = 50, step=0.1, value = 20, ticks=FALSE), #c( sqrt(2*20^2/337))
+                                  min = 1, max = 50, step=0.1, value = 25, ticks=FALSE), #c( sqrt(2*20^2/337))
                       
                       
                       sliderInput("alpha", "Alpha, Type I error",
@@ -95,9 +97,9 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     
                     tags$a(href = "https://archive.org/details/StatisticalMethodsInMedicalResearch/page/n1", "[1] P.Armitage, Statistical Methods in Medical Research, P140 4th Edition"),
                     div(p(" ")),
-                    tags$a(href = "https://innovativeclinicaltrial.org/hypothesis-testing-clinically-important-effects-and-do-we-pay-too-much-for-clinical-trial-insurance/", "[2] Kert Viele, Berry Consultants"),
-                    div(p(" ")),
-                    
+                    # tags$a(href = "https://innovativeclinicaltrial.org/hypothesis-testing-clinically-important-effects-and-do-we-pay-too-much-for-clinical-trial-insurance/", "[2] Kert Viele, Berry Consultants"),
+                    # div(p(" ")),
+                    # 
                   ),
                   
                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~tab panels
@@ -178,7 +180,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                
                                fluidRow(
                                  column(12,
-                                        shinyWidgets::sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the associated effect size (orange crosses on x axis of Figure 3):",
+                                        sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the associated effect size (orange crosses on x axis of Figure 3):",
                                                                       
                                                                       choices=c(0, 0.000001, 0.00001, 0.0001, 0.001, 0.001189,0.003429, 0.01, 0.05, 0.10, 0.20,   0.50, 0.75),
                                                                       
@@ -186,83 +188,83 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                                                 ),
                               
                                h4(htmlOutput("textWithNumber4",) ) ,
-                               width = 12 ),
+                               width = 12 )
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
                       #~~~~~~~~~~~~          
-                      tabPanel("5 Check results using simulation", 
-                               
-                               
-                               div(strong("Use the sliders below to select true population parameters, alpha and beta levels to simulate 
-                                          data using and also to select the number of simulations to perform.  We run the experiment 
-                                          a large number of times and perform a T-test each time. "),
-                                   
-                                   p("Further work is needed as simulations are not as expected!")),
-                                actionButton("resamplex", "Perform another simulation"),
-                                br(),br(),
-                               ## new here -----------------------------------------------------------------------------------
-                               # https://stackoverflow.com/questions/47355043/multiple-column-layout-inside-a-tabpanel
-                               sidebarLayout(
-                                 # Sidebar panel for inputs ----
-                                 sidebarPanel( 
-                                   
-                                   list(
-                                     fluidRow(
-                                       
-                                       column(4,
-                                              sliderInput("betax",
-                                                          "Beta, type II error",
-                                                          min=0.01, max=0.5, step=0.01, value= 0.10, ticks=FALSE)),
-                                       column(4,
-                                              sliderInput("alphax",
-                                                          "Alpha, type I error", 
-                                                          min = 0.01, max = 0.5, step=0.01, value = 0.05, ticks=FALSE)),
-                                       column(4,
-                                              sliderInput("sdx", 
-                                                          "Standard deviation",
-                                                          min = 1, max = 20, step=1, value = c(20),ticks=FALSE))
-                                     ),
-                                     
-                                     fluidRow(
-                                   
-                                       column(4,
-                                              sliderInput("nullx", 
-                                                          "Treatment effect under null hypothesis",
-                                                          min = 0, max = 20, step=1, value = c(0),ticks=FALSE)),
-                                       column(4,
-                                              sliderInput("mu2x", 
-                                                          "Treatment effect under alternative hypothesis",
-                                                          min = 1, max = 20, step=1, value = 5, ticks=FALSE)) ,
-                                       column(4,
-                                              shinyWidgets::sliderTextInput("sims","Number of simulations:",
-                                                                            
-                                                                            choices=c(1e3, 5e3, 1e4, 2e4),
-                                                                            
-                                                                            selected=1e3, grid = F, width = '100%'))
-                                       
-                                     )
-                                    
-                                      
-                                   )
-                                   
-                                   ,   width = 12 ),
-                                 
-                                 # Main panel for displaying outputs ----
-                                 mainPanel(
-
-                                   p(strong("Inputs")) ,
-                                  div( tableOutput("tablex")  ),
-                                  
-                                  br(),  
-                                  p(strong("Theory")) ,
-                                  tableOutput("tablex2"),
-                                  
-                                  br(),  
-                                  p(strong("Simulation")) ,
-                                  tableOutput("tablex1")  
-                                  ,
-                                    width = 12 ))  # experiment with this 
-                               
-                      ) #,
+                      # tabPanel("5 Check results using simulation", 
+                      #          
+                      #          
+                      #          div(strong("Use the sliders below to select true population parameters, alpha and beta levels to simulate 
+                      #                     data and also to select the number of simulations to perform.  We run the experiment 
+                      #                     a large number of times and perform a T-test each time collecting the releant information to summarise. "),
+                      #              
+                      #              p("Further work is needed as simulations are not as expected, when sample size is small.")),
+                      #           actionButton("resamplex", "Perform another simulation"),
+                      #           br(),br(),
+                      #          ## new here -----------------------------------------------------------------------------------
+                      #          # https://stackoverflow.com/questions/47355043/multiple-column-layout-inside-a-tabpanel
+                      #          sidebarLayout(
+                      #            # Sidebar panel for inputs ----
+                      #            sidebarPanel( 
+                      #              
+                      #              list(
+                      #                fluidRow(
+                      #                  
+                      #                  column(4,
+                      #                         sliderInput("betax",
+                      #                                     "Beta, type II error",
+                      #                                     min=0.01, max=0.5, step=0.01, value= 0.10, ticks=FALSE)),
+                      #                  column(4,
+                      #                         sliderInput("alphax",
+                      #                                     "Alpha, type I error", 
+                      #                                     min = 0.01, max = 0.5, step=0.01, value = 0.05, ticks=FALSE)),
+                      #                  column(4,
+                      #                         sliderInput("sdx", 
+                      #                                     "Standard deviation",
+                      #                                     min = 1, max = 20, step=1, value = c(20),ticks=FALSE))
+                      #                ),
+                      #                
+                      #                fluidRow(
+                      #              
+                      #                  column(4,
+                      #                         sliderInput("nullx", 
+                      #                                     "Treatment effect under null hypothesis",
+                      #                                     min = 0, max = 20, step=1, value = c(0),ticks=FALSE)),
+                      #                  column(4,
+                      #                         sliderInput("mu2x", 
+                      #                                     "Treatment effect under alternative hypothesis",
+                      #                                     min = 1, max = 20, step=1, value = 5, ticks=FALSE)) ,
+                      #                  column(4,
+                      #                         sliderTextInput("sims","Number of simulations:",
+                      #                                                       
+                      #                                                       choices=c(1e3, 5e3, 1e4, 2e4, 1e5),
+                      #                                                       
+                      #                                                       selected=1e3, grid = F, width = '100%'))
+                      #                  
+                      #                )
+                      #               
+                      #                 
+                      #              )
+                      #              
+                      #              ,   width = 12 ),
+                      #            
+                      #            # Main panel for displaying outputs ----
+                      #            mainPanel(
+                      # 
+                      #              p(strong("Inputs")) ,
+                      #             div( tableOutput("tablex")  ),
+                      #             
+                      #             br(),  
+                      #             p(strong("Theory")) ,
+                      #             tableOutput("tablex2"),
+                      #             
+                      #             br(),  
+                      #             p(strong("Simulation")) ,
+                      #             tableOutput("tablex1")  
+                      #             ,
+                      #               width = 12 ))  # experiment with this 
+                      #          
+                      # ) #,
                       
                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
                       # tabPanel("5 Check results using simulation", 
@@ -361,7 +363,7 @@ server <- shinyServer(function(input, output) {
     
     crit1 <- qnorm(1-as.numeric(alpha/2))
     
-    pow <- pwr::pwr.t.test(d=(mu2-mu1)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample",
+    pow <-  pwr.t.test(d=(mu2-mu1)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample",
                            alternative="two.sided")
     
     # this equation from armitage and LSHTM notes seems to give stable 60.5% but not R canned equation above?
@@ -428,7 +430,7 @@ server <- shinyServer(function(input, output) {
                    , tags$span(style="color:red", p1(L)) , ## only true for 95% so alpha 0.05 <- change this? add crosses??*********
                    " to  "
                    , tags$span(style="color:red", p1(U)) , ## only true for 95% so alpha 0.05?*********
-                   " are decently likely to occur. Getting an observed effect of "
+                   " are quite likely to occur. Getting an observed effect of "
                    , tags$span(style="color:red", p1(FF)) , # 1 SE up from null
                    " (purple cross), for example,  is well within this
                                sampling variability and not conclusive evidence the therapy works.
@@ -444,13 +446,13 @@ server <- shinyServer(function(input, output) {
                  This limits our chance of type I error at alpha= "
                    , tags$span(style="color:red", p1(Y*100)) , # alpha user input
                    "% (two sided, we add both of the red areas together).<br><b><br><b> The green distribution shows the range of likely 
-                 values when the therapy achieves the hoped for "
+                 values when the therapy achieves the desired "
                    , tags$span(style="color:red", p1(B)) , # alternative user input
                    " point effect. Values anywhere from "
                    , tags$span(style="color:red", p1(V)) , #  only true for 95% so alpha 0.05 <- change this? add crosses??*********
                    " to  "
                    , tags$span(style="color:red", p1(W)) , # only true for 95% so alpha 0.05 <- change this? add crosses?*********
-                   " are decently likely. Fortunately, if the true effect is "
+                   " are quite likely. Fortunately, if the true effect is "
                    , tags$span(style="color:red", p1(B)) , # simple user input
                    " points, then we have a "
                    , tags$span(style="color:red", p1(100-X*100)) , # power
@@ -500,7 +502,7 @@ server <- shinyServer(function(input, output) {
                    , tags$span(style="color:red", p1(L)) ,
                    " to  "
                    , tags$span(style="color:red", p1(U)) ,
-                   " are decently likely to occur. Getting an observed effect of "
+                   " are quite likely to occur. Getting an observed effect of "
                    , tags$span(style="color:red", p1(FF2)) ,
                    " (purple cross), for example,  is well within this
                                sampling variability and not conclusive evidence the therapy works.
@@ -516,13 +518,13 @@ server <- shinyServer(function(input, output) {
                    This limits our chance of type I error at alpha= "
                    , tags$span(style="color:red", p1(Y*100)) ,
                    "% (two sided, we add both of the red areas together). <br><b><br><b>The green distribution shows the range of
-                   likely values when the therapy achieves the hoped for "
+                   likely values when the therapy achieves the desired "
                    , tags$span(style="color:red", p1(B)) ,
                    " point effect. Values anywhere from "
                    , tags$span(style="color:red", p1(V)) ,
                    " to  "
                    , tags$span(style="color:red", p1(W)) ,
-                   " are decently likely. Fortunately, if the true effect is "
+                   " are quite likely. Fortunately, if the true effect is "
                    , tags$span(style="color:red", p1(B)) ,
                    " points, then we have a "
                    , tags$span(style="color:red", p1(100-X*100)) ,
@@ -1166,71 +1168,50 @@ server <- shinyServer(function(input, output) {
   # --------------------------------------------------------------------------
   # Dummy line to trigger off button-press
   
-  simulate <- reactive({
-    
-   sample <- random.sample()
-     
-    sims <- 4999
-    mu1 <- 0  
-    mu2 <- input$mu2
-    sd1 <- input$sd1
-    sd2 <- input$sd1
-    alpha <- input$alpha
-    beta <- input$beta
-    
-    crit1 <- qnorm(1-as.numeric(alpha/2))
-    
-    muDiff  <-  mu2-mu1                  # true difference in means
-    
-   # n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
-    
-    pow<-pwr::pwr.t.test(d=(muDiff)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample", alternative="two.sided")
-    n1  <- n2 <- pow$n
-    
-    x <- replicate(sims, 
-                   t.test(rnorm(n1,mu1,sd=sd1),
-                          rnorm(n2,mu2,sd=sd1), 
-                          conf.level=1-alpha, alternative="two.sided"))
-    
-    meanp <- mean(x["p.value",]<0.05)  #power
-    
-    medp <- median(unlist(x["p.value",]))
-    
-    theory <- 2*(1 - pnorm(crit1+qnorm(1-beta))) # expected pvalue
-    
-    d <- as.data.frame(cbind( alpha=alpha, beta=beta, meand=muDiff, sd=sd1,n1=n1, theory=theory, meanp = meanp , medp=medp) )
-    
-    namez <- c( "Alpha", "Beta", "Mean diff.", "Common SD in each group", "N per group", "Expected P-value", 
-                "Simulated Power", "Simulated Median P-Value")
-      
-    names(d) <- namez
-    
-    ##try again
-    
-    
-    # beta=.1
-    # alpha=.05
-    # # these can vary
-    # sd=sd1#sample(1:40,1)
-    # null=sample(1:10,1)
-    # mu2=sample(11:21,1) #+null  
-    # # stand. difference
-    # d=(mu2-null)/sd 
-    # # calc sample size
-    # n <-(2*(qnorm(1-alpha/2) + qnorm(1-beta) )^2 ) / (d)^2  #power, obtain N
-    # 
-    # # show the parameters
-    # sd 
-    # null 
-    # mu2 
-    # d 
-    # n
-    # 
-    
-    
-    return(list(d=d))
-    
-  }) 
+  # simulate <- reactive({
+  #   
+  #  sample <- random.sample()
+  #    
+  #   sims <- 4999
+  #   mu1 <- 0  
+  #   mu2 <- input$mu2
+  #   sd1 <- input$sd1
+  #   sd2 <- input$sd1
+  #   alpha <- input$alpha
+  #   beta <- input$beta
+  #   
+  #   crit1 <- qnorm(1-as.numeric(alpha/2))
+  #   
+  #   muDiff  <-  mu2-mu1                  # true difference in means
+  #   
+  #  # n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
+  #   
+  #   pow<-pwr::pwr.t.test(d=(muDiff)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample", alternative="two.sided")
+  #   n1  <- n2 <- pow$n
+  #   
+  #   x <- replicate(sims, 
+  #                  t.test(rnorm(n1,mu1,sd=sd1),
+  #                         rnorm(n2,mu2,sd=sd1), 
+  #                         conf.level=1-alpha, alternative="two.sided"))
+  #   
+  #   meanp <- mean(x["p.value",]<0.05)  #power
+  #   
+  #   medp <- median(unlist(x["p.value",]))
+  #   
+  #   theory <- 2*(1 - pnorm(crit1+qnorm(1-beta))) # expected pvalue
+  #   
+  #   d <- as.data.frame(cbind( alpha=alpha, beta=beta, meand=muDiff, sd=sd1,n1=n1, theory=theory, meanp = meanp , medp=medp) )
+  #   
+  #   namez <- c( "Alpha", "Beta", "Mean diff.", "Common SD in each group", "N per group", "Expected P-value", 
+  #               "Simulated Power", "Simulated Median P-Value")
+  #     
+  #   names(d) <- namez
+  #   
+  #  
+  #   
+  #   return(list(d=d))
+  #   
+  # }) 
   ##################################################
   
   simulatex <- reactive({
@@ -1271,33 +1252,30 @@ server <- shinyServer(function(input, output) {
     
    # sigDiff <- sqrt((sd^2/n) + (sd^2/n))
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ok
     #x <- (replicate(sims, t.test(rnorm(n,null,sd),
      #                            rnorm(n,mu2, sd), conf.level=1-alpha, 
       #                                     alternative="two.sided", var.equal=TRUE) $p.value))
     #medp <- median(x)
     #meanp <- mean(x <alpha) #
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ok
     # # standardises scale using d
     #x <- (replicate(sims, t.test(rnorm(n,0,1),rnorm(n, d,1), conf.level=.95, alternative="two.sided", var.equal=TRUE) $p.value))  
     #medp <- median(x) # median pvalue if H1 true
     #meanp <- mean(x <alpha) # power again
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~not checked
+    
+   # #try t dis?
+     dfx=n-1
+     # x <- (replicate(sims, t.test(rt(n, df=dfx), 
+     #                              rt(n, df=dfx)*sqrt(1 * (dfx-2)/dfx)+d,
+     #                              conf.level=.95, alternative="two.sided") $p.value))  
    #   
-   #   
-   #   
-   # #try t dis
-    dfx=n-1
-     x <- (replicate(sims, t.test(rt(n, df=dfx), 
-                                  rt(n, df=dfx)*sqrt(1 * (dfx-2)/dfx)+d,
-                                  conf.level=.95, alternative="two.sided") $p.value))  
-   #   
-   #   
-     # sigDiff <- sqrt((sd^2/n) + (sd^2/n))
-      #x <- (replicate(sims, t.test(rt(n,df=dfx, sigDiff), 
-             #                      rt(n, df=dfx, sigDiff)*1+d, 
-              #                     conf.level=1-alpha, paired = FALSE, alternative="two.sided") $p.value))  
+     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ok
+     #sigDiff <- sqrt((sd^2/n) + (sd^2/n))
+      x <- (replicate(sims, t.test(rt(n,df=dfx, sd), 
+                                  rt(n, df=dfx, sd)*1+d, 
+                                  conf.level=1-alpha, paired = FALSE, alternative="two.sided") $p.value))  
    #   
      medp <- median(x) # median pvalue if H1 true
      meanp <- mean(x <alpha) # power again
@@ -1326,19 +1304,19 @@ server <- shinyServer(function(input, output) {
     # 
     
     dd <- as.data.frame(cbind( alpha=alpha, beta=beta, power=1-beta, meand=muDiff, sd=sd, d=d , n=n) )
-    namez <- c( "Alpha", "Beta", "Power","Mean difference", "Common SD in each group", "Standardised Difference" , "N per group")
+   namez <- c( "Alpha", "Beta", "Power","Mean difference", "Common SD in each group", "Standardised Difference" , "N per group")
     names(dd) <- namez
-    
+#    
     dd1 <- as.data.frame(cbind( medp=medp,    p.simH1=p.simH1 , meanp=meanp ) )
-    tmp <- paste0("Probability P-Value is less than ",p6(theory)," at H1")
-    namez <- c(  "Simulated P-Value at H1",  tmp, "Simulated Power")
-    names(dd1) <- namez
+  tmp <- paste0("Probability P-Value is less than ",p6(theory)," at H1")
+   namez <- c(  "Simulated P-Value at H1",  tmp, "Simulated Power")
+ names(dd1) <- namez
     
-    namez <- c( "Expected P-Value at H1",   tmp )
+     namez <- c( "Expected P-Value at H1",   tmp )
     dd2 <- as.data.frame(cbind( medp=theory,   meanp=.5  ) )
     names(dd2) <- as.character(namez)
     
-    #dd2<-DT::datatable((dd2), colnames = namez)
+  
     
     return(list(dd=dd, dd1=dd1, dd2=dd2))
     
@@ -1350,7 +1328,7 @@ server <- shinyServer(function(input, output) {
     
     d <- (simulate()$d  )
     
-    data.frame(d)
+    d<-data.frame(d)
  
     }, digits = c(6 ), colnames = TRUE)
     
@@ -1360,7 +1338,7 @@ server <- shinyServer(function(input, output) {
     
     dd <- (simulatex()$dd  )
     
-    data.frame(dd)
+   dd<- data.frame(dd)
     
   }, digits = c(6 ), colnames = TRUE)
   # --------------------------------------------------------------------------
@@ -1368,7 +1346,7 @@ server <- shinyServer(function(input, output) {
     
     dd1 <- (simulatex()$dd1  )
     
-    data.frame(dd1)
+   dd1<- data.frame(dd1)
     
   }, digits = c(6 ), colnames = TRUE)
   # --------------------------------------------------------------------------
@@ -1376,7 +1354,7 @@ server <- shinyServer(function(input, output) {
     
     dd2 <- (simulatex()$dd2  )
     
-    data.frame(dd2)
+   dd2<- data.frame(dd2)
     
   }, digits = c(6 ), colnames = TRUE)
   #-------------------------------------------------------------------
