@@ -97,8 +97,10 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     
                     tags$a(href = "https://archive.org/details/StatisticalMethodsInMedicalResearch/page/n1", "[1] P.Armitage, Statistical Methods in Medical Research, P140 4th Edition"),
                     div(p(" ")),
-                    # tags$a(href = "https://innovativeclinicaltrial.org/hypothesis-testing-clinically-important-effects-and-do-we-pay-too-much-for-clinical-trial-insurance/", "[2] Kert Viele, Berry Consultants"),
-                    # div(p(" ")),
+                    tags$a(href = "https://errorstatistics.com/2014/03/17/stephen-senn-on-how-to-interpret-discrepancies-against-which-a-test-has-high-power-guest-post/", "[2] Stephen Senn, 
+To duplicate select, between-patient standard deviation of 9 and a clinically relevant difference of 4. 
+A type I error rate of 5% two-sided. A power of 80%."),
+                     div(p(" ")),
                     # 
                   ),
                   
