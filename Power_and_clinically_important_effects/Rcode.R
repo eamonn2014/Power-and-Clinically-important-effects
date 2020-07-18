@@ -2,6 +2,7 @@
 # Rshiny ideas from on https://gallery.shinyapps.io/multi_regression/
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #library(DT)
+rm(list=ls())
 library(shiny)
 #library(nlme)
 #library(VCA)
@@ -20,278 +21,63 @@ p6 <- function(x) {formatC(x, format="f", digits=6)}
 options(width=100)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-ui <- fluidPage(theme = shinytheme("journal"),
-                
-                setBackgroundColor(
-                  color = c( "#C5DBE6", "#F7FBFF"), 
-                  gradient = "linear",
-                  direction = "bottom"
-                ),
-                # App title ----
-                titlePanel(""),
-                
-                # Sidebar layout with input and output definitions ----
-                # div(p("When being introduced to frequentist power calculations invariably you will be taught using a figure showing 
-                #     two normal distributions. 
-                #     If you are not familiar with the properties of distributions the concepts may seem quite strange, 
-                #     here I try to explain what's going on using RShiny.
-                #     The sliders below are used to select the
-                #     true population parameters for a normally distributed continuous response and the probabilities for making two types of error. Though the concepts apply equally to 
-                #           proportions as well. Firstly we will describe the contents of each tab.")),
-                
-               # (h4("Introduction")),
-                
-                shinyUI(pageWithSidebar(
-                  
-                headerPanel("The relationship between power, alpha, beta, P-Values and clinical importance"),  # old titlepanel
-                
-              #  sidebarLayout(
-                  
-                  sidebarPanel( 
-                    p(strong("Introduction")),
-                    div(p("When being introduced to frequentist power calculations invariably you will be taught using a figure showing
-                    two normal distributions.
-                    If you are not familiar with the properties of distributions the concepts may seem quite strange,
-                    here I try to explain what's going on using RShiny.
-                    The sliders below are used to select the
-                    true population parameters for a normally distributed continuous response and the probabilities for making two types of error. Though the concepts apply equally to
-                          proportions as well. Firstly we will describe the contents of each tab.")),
-                    
-                    div(strong("1 Sample size")),p("On the first tab the required number of subjects is calculated based on the inputs 
-                    for a two arm study, randomised 1:1, 
-                     in which we estimate a treatment effect, for example for a new treatment versus a placebo.
-                    We calculate the sample size required for a T-test procedure. This information is then used on the next tab."),
-                    
-                    div(strong("2 Operating characteristics")),p("On this tab the operating characteristics of the study are displayed."),
-                    div(strong("3 The potential for statistically significant but clinically unimportant results")) ,
-                    p("Here the relationship between alpha, beta, the Z score, P-Value and clinical importance
-                          are explored using the standard normal distribution."),
-                    div(strong("4 Take home messages"), p("We show some relationships that are useful to remember.")),
-                   # div(strong("5 Check results using simulation"), p("Finally we perform simulations to check the results.")),
-                    
-                    div(
-                      br(),
-                      
-                      actionButton(inputId='ab1', label="RShiny code", 
-                                   icon = icon("th"), 
-                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Power-and-Clinically-important-effects/master/Power_and_clinically_important_effects/app.R', '_blank')"),
-                      actionButton(inputId='ab1', label="R code   ", 
-                                   icon = icon("th"), 
-                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Power-and-Clinically-important-effects/master/Power_and_clinically_important_effects/Rcode.R', '_blank')"),
-                      
-                      
-                    
-                      br(), br(),  
-                      div(strong("Select true population parameters and probability of errors:")),
-                      br(),
-                      
-
-                      sliderInput("mu2",
-                                  "Mean treatment effect under alternative hypothesis",
-                                  min=-30, max=30, step=1, value=3, ticks=FALSE),
-                      
-                      sliderInput("sd1", "Standard deviation (SD)",
-                                  min = 1, max = 50, step=0.1, value = 25, ticks=FALSE), #c( sqrt(2*20^2/337))
-                      
-                      
-                      sliderInput("alpha", "Alpha, Type I error",
-                                  min = 0.001, max = .5, step=.001, value = c(0.05 ),ticks=FALSE),
-                      
-                      sliderInput("beta", "Beta, Type II error",
-                                  min = 0.01, max = .5, step=.01, value = c(0.10 ),ticks=FALSE)  # limit to 0.5 otherwise need to code to explain
-                    ),
-                    
-                    div(p("References:")),  
-                    
-                    tags$a(href = "https://archive.org/details/StatisticalMethodsInMedicalResearch/page/n1", "[1] P.Armitage, Statistical Methods in Medical Research, P140 4th Edition"),
-                    div(p(" ")),
-                    tags$a(href = "https://errorstatistics.com/2014/03/17/stephen-senn-on-how-to-interpret-discrepancies-against-which-a-test-has-high-power-guest-post/", "[2] Stephen Senn, 
-To duplicate select, between-patient standard deviation of 9 and a clinically relevant difference of 4. 
-A type I error rate of 5% two-sided. A power of 80%."),
-                     div(p(" ")),
-                   
-                   
-                   tags$style(".well {background-color:##E0FFFF ;}"), ##ABB0B4AF
-                   
-                   tags$head(
-                     tags$style(HTML('#ab1{background-color:orange}'))
-                   ),
-                   
-                   tags$head(
-                     tags$style(HTML('#resample{background-color:orange}'))
-                   ),
-                   
-                   
-                   
-                    # 
-                  ),
-                  
-                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~tab panels
-                  mainPanel(
-                    
-                    #  htmlOutput("testHTML") ,
-                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                    navbarPage(       
-                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
-                      tags$style(HTML(" 
-                            .navbar-default .navbar-brand {color: cyan;}
-                            .navbar-default .navbar-brand:hover {color: blue;}
-                            .navbar { background-color: lightgrey;}
-                            .navbar-default .navbar-nav > li > a {color:black;}
-                            .navbar-default .navbar-nav > .active > a,
-                            .navbar-default .navbar-nav > .active > a:focus,
-                            .navbar-default .navbar-nav > .active > a:hover {color: pink;background-color: purple;}
-                            .navbar-default .navbar-nav > li > a:hover {color: black;background-color:yellow;text-decoration:underline;}
-                            .navbar-default .navbar-nav > li > a[data-value='t1'] {color: red;background-color: pink;}
-                            .navbar-default .navbar-nav > li > a[data-value='t2'] {color: blue;background-color: lightblue;}
-                            .navbar-default .navbar-nav > li > a[data-value='t3'] {color: green;background-color: lightgreen;}
-                   ")), 
-                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
-                      
-                      tabPanel("1 Sample size", 
-                               
-                               h4(htmlOutput("textWithNumber9",) ) ,
-                               
-                               br(),
-
-                               withMathJax(
-                                 helpText('We have n per group determined using $$ 2 \\biggl[\\frac{(Z_{1-\\alpha/2} + Z_{\\beta})\\sigma}{\\delta}\\biggr]^2  $$')),
-                               
-                               withMathJax(
-                                 helpText("Where the symbol delta is the [Mean treatment effect under alternative hypothesis'- 0]. This returns n as")),
-                               
-                               h4(htmlOutput("textWithNumber10",) ) ,
-                               div( verbatimTextOutput("ssize2"))
-                      ),
-                      
-                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                      tabPanel("2 Operating characteristics", 
-                               # h3("Operating characteristics of frequentist power calculations"),
-                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                               div(plotOutput("reg.plot", width=fig.width, height=fig.height)),  
-                               
-                               #https://stackoverflow.com/questions/39250200/rshiny-textoutput-and-paragraph-on-same-line
-                               h4(htmlOutput("textWithNumber1",) ),
-                               
-                               p("$$\\begin{align*}
-                                \\text{Standard error of treatment effect} = \\sqrt{\\left({\\frac{ \\sigma_1^2}{n_1}  + \\frac{ \\sigma_2^2}{n_2} }\\right)}   \\\\
-                                \\end{align*}$$"),
-                               p(""),
-                               
-                               h4(htmlOutput("textWithNumber",) ),
-                               
-                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
-                               # for some reason this is need or abpve will not render!
-                               withMathJax(
-                                 helpText('
-                                $$   $$')),  
-                               
-                               p(strong("")),
-                               
-                               div( verbatimTextOutput("ssize"))
-                      ) ,
-                      
-                      tabPanel("3 The potential for statistically significant but clinically unimportant results", 
-                               div(plotOutput("norm.plot", width=fig.width, height=fig.height)),
-                               h4(htmlOutput("textWithNumber2",) ) ,
-                               h4(htmlOutput("textWithNumber3",) ) ,
-                               width = 12 ),
-                      
-                      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
-                      tabPanel("4 Take home messages", 
-                               
-                               div(plotOutput("norm.plot1", width=fig.width, height=fig.height)),
-                               
-                               fluidRow(
-                                 column(12,
-                                        sliderTextInput("pvalue2","Enter a (two-sided) P-Value and see the associated effect size (orange crosses on x axis of Figure 3):",
-                                                                      
-                                                                      choices=c(0, 0.000001, 0.00001, 0.0001, 0.001, 0.001189,0.003429, 0.01, 0.05, 0.10, 0.20,   0.50, 0.75),
-                                                                      
-                                                                      selected=0.01, grid = T, width = '100%'))
-                                                                ),
-                              
-                               h4(htmlOutput("textWithNumber4",) ) ,
-                               width = 12 )
-                 
-                      
-                    )))
-                )
-)
-
-server <- shinyServer(function(input, output) {
-  
-   random.sample <- reactive({
-  #   # Dummy line to trigger off button-press
-     foo <- input$resample
-   sample <- random.sample()
-     
-   })
-  
-  # --------------------------------------------------------------------------
-  # This is where a new sample is instigated only random noise is required to be generated
-  random.sample <- reactive({
- #
- #   # Dummy line to trigger off button-press
-    foo <- input$resample
- #
- #  # N <- input$N
-   mu1 <- 0 #input$mu1
-    mu2 <- input$mu2
-    sd1 <- input$sd1
-    sd2 <- input$sd1
-    alpha <- input$alpha
-    beta <- input$beta
-
-    return(list(
-      mu1=mu1, mu2=mu2, sd1=sd1, sd2=sd2, alpha=alpha, beta=beta     ))
-  })
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  random.samplex <- reactive({
-    #   # Dummy line to trigger off button-press
-    foo <- input$resamplex
-    sample <- random.samplex()
+ 
+                       #Select true population parameters and probability of errors:")),
+                      mu2=2# Mean treatment effect under alternative hypothesis",
+                      sd1=sd2=25
+                      alpha = c(0.05 )  # "Alpha, Type I error",
+                      beta=.10 # "Beta, Type II error",
+              
+               pvalue2=0.05 # "Enter a (two-sided) P-Value and see the associated effect size (orange crosses on x axis of Figure 3):",
     
-  })
-  
-  random.samplex <- reactive({
-    #
-    #   # Dummy line to trigger off button-press
-    foo <- input$resamplex
-    #
+  # --------------------------------------------------------------------------
+ 
     #  # N <- input$N
-    mu1 <- input$nullx #input$mu1
-    mu2 <- input$mu2x
-    sd1 <- input$sdx
-    sd2 <- input$sdx
-    alpha <- input$alpha
-    beta <- input$beta
+    mu1 <- 0 #input$mu1
+ 
     
-    return(list(
-      mu1=mu1, mu2=mu2, sd1=sd1, sd2=sd2, alpha=alpha, beta=beta     ))
-  })
-  # 
+ 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+  
+  # random.samplex <- reactive({
+  #   #
+  #   #   # Dummy line to trigger off button-press
+  #   foo <- input$resamplex
+  #   #
+  #   #  # N <- input$N
+  #   mu1 <- input$nullx #input$mu1
+  #   mu2 <- input$mu2x
+  #   sd1 <- input$sdx
+  #   sd2 <- input$sdx
+  #   alpha <- input$alpha
+  #   beta <- input$beta
+  #   
+  #   return(list(
+  #     mu1=mu1, mu2=mu2, sd1=sd1, sd2=sd2, alpha=alpha, beta=beta     ))
+  # })
+  # # 
   # --------------------------------------------------------------------------
-  # Set up the dataset based on the inputs 
-  make.regression <- reactive({
-    
-    #   https://stats.stackexchange.com/questions/28876/difference-between-anova-power-simulation-and-power-calculation
-    
-    #   sample <- random.sample()
-    
-    mu1 <- 0# sample$mu1
-    mu2 <- input$mu2
-    sd1 <- input$sd1
-    sd2 <- input$sd1
-    alpha <- input$alpha
-    beta <- input$beta
+  # # Set up the dataset based on the inputs 
+  # make.regression <- reactive({
+  #   
+  #   #   https://stats.stackexchange.com/questions/28876/difference-between-anova-power-simulation-and-power-calculation
+  #   
+  #   #   sample <- random.sample()
+  #   
+  #   mu1 <- 0# sample$mu1
+  #   mu2 <- input$mu2
+  #   sd1 <- input$sd1
+  #   sd2 <- input$sd1
+  #   alpha <- input$alpha
+  #   beta <- input$beta
     
     muDiff  <-  mu2-mu1                  # true difference in means
     
     crit1 <- qnorm(1-as.numeric(alpha/2))
     
     pow <-  pwr.t.test(d=(mu2-mu1)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample",
-                           alternative="two.sided")
+                       alternative="two.sided")
     
     # this equation from armitage and LSHTM notes seems to give stable 60.5% but not R canned equation above?
     n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
@@ -306,45 +92,32 @@ server <- shinyServer(function(input, output) {
     
     crit <- mu1 + crit1 * se1
     
-    return(list( x=x, se1=se1, se2=se2, 
-                 sigDiff=sigDiff, n1=n1, n2=n2, 
-                 crit=crit,
-                 crit1=crit1,
-                 muDiff=muDiff, 
-                 alpha=alpha, beta=beta, 
-                 mu1=mu1, mu2=mu2 , sd1=sd1, pow=pow
-    )) 
-    
-  })  
-  
+ 
   # #---------------------------------------------------------------------------
   # #grab the power
-  output$ssize2 <- renderPrint({
-    
-    return(make.regression()$pow)
-    
-  })
+ 
+ 
   # allowing mixing in numeric and text 
   # https://stackoverflow.com/questions/39250200/rshiny-textoutput-and-paragraph-on-same-line
   
-  output$textWithNumber <- renderText({ 
+ 
     
-    A <- make.regression()$mu1    # this will be zero
-    B <- make.regression()$mu2    # this is an input
-    C <- make.regression()$crit   # 0 + crit1 * se1, where crit1 is alpha 2 sided input and se1 the pooled SE
-    D <- make.regression()$se1    # pooled SD
-    E <- make.regression()$sigDiff #pooled Sd again
-    FF <-  make.regression()$mu1 +  make.regression()$sigDiff # 0 + pooled SE
-    FF2 <- make.regression()$mu1 -  make.regression()$sigDiff # 0 - pooled SE
+    A <- mu1    # this will be zero
+    B <- mu2    # this is an input
+    C <- crit   # 0 + crit1 * se1, where crit1 is alpha 2 sided input and se1 the pooled SE
+    D <- se1    # pooled SD
+    E <- sigDiff #pooled Sd again
+    FF <-  mu1 +  sigDiff # 0 + pooled SE
+    FF2 <- mu1 -  sigDiff # 0 - pooled SE
     
-    L <- make.regression()$mu1 -  make.regression()$sigDiff * make.regression()$crit1  # 0 - pooled SE x user input alpha level 
-    U <- make.regression()$mu1 +  make.regression()$sigDiff * make.regression()$crit1  #
-    V <- make.regression()$mu2 -  make.regression()$sigDiff * make.regression()$crit1  # mu2 - pooled SE x user input alpha level
-    W <- make.regression()$mu2 +  make.regression()$sigDiff * make.regression()$crit1
+    L <- mu1 -  sigDiff * crit1  # 0 - pooled SE x user input alpha level 
+    U <- mu1 +  sigDiff * crit1  #
+    V <- mu2 -  sigDiff * crit1  # mu2 - pooled SE x user input alpha level
+    W <- mu2 +  sigDiff * crit1
     
-    X <- make.regression()$beta  # user input 
-    Y <- make.regression()$alpha # user input 
-    N <- make.regression()$n1    # sample size  
+    X <- beta  # user input 
+    Y <- alpha # user input 
+    N <- n1    # sample size  
     
     if (B>0) {
       
@@ -418,9 +191,9 @@ server <- shinyServer(function(input, output) {
                    , tags$span(style="color:red", p3(qnorm(0.001/2,  mean=A, sd=E, lower.tail = FALSE ))),
                    "")) 
       
-  } else if (B<0) {
+    } else if (B<0) {
       
-       HTML(paste0( "The distribution in pink, shows the distribution of observed treatment effects when the
+      HTML(paste0( "The distribution in pink, shows the distribution of observed treatment effects when the
     therapy doesn't work (true effect is: "
                    , tags$span(style="color:red", p0(A)) ,
                    "). While the true effect is  "
@@ -498,60 +271,13 @@ server <- shinyServer(function(input, output) {
                    # "What effect do I need to see in my study to get p=0.001 two sided, answer: "
                    # , tags$span(style="color:red", p3(qnorm(0.001/2,  mean=A, sd=E, lower.tail = FALSE ))),
                    "" ))
-      
     }
-  })
+ 
   # --------------------------------------------------------------------------
-  
-  output$textWithNumber1 <- renderText({ 
+   
     
-    HTML(paste0( "Figure 1 depicts the sampling distribution of the treatment effect 
-                                        (that is, the standard error of the mean difference between the two randomised groups); 
-                                 when the treatment works as expected (green) and also when the treatment does not work (pink).
-                                        Remember we are presenting two scenarios in Figure 1, both cannot occur. The following equation
-                                        shows the standard error (SE) calculation used for each scenario, this is also known as the 
-                                        standard deviation of the mean difference and shows the spread or variation around the mean difference.
-                                        Therefore the two sample sizes ",HTML(" <em>n1</em>")," and ",HTML(" <em>n2</em>")," 
-                     need to be included in the calculation of each sampling distribution."))
-    
-  })
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  output$textWithNumber9 <- renderText({ 
-    
-    HTML(paste0( "With the selected inputs, 'Mean treatment effect under alternative hypothesis', 'Standard deviation (SD)', Alpha, ('Type I error') and 'Beta, ('Type II error'), we perform a sample size calculation 
-                                        and estimate the number of subjects required for each treatment group. We have equal randomisation 1:1 of subjects to the two groups and a continuous response. As mentioned the approach also applies to planning a study where the interest is in proportions.
-                                        We use the equation shown below for calculation of the required sample size [1]. For interest R power function for a T-test is also shown at the bottom."))
-    
-  })
-  # --------------------------------------------------------------------------
-  
-  output$textWithNumber10 <- renderText({ 
-    
-    N <- make.regression()$n1    # sample size 
-    
-    HTML(paste0( "  "
-                 , tags$span(style="color:black", N  ,cex=.3),  
-                 
-                 "" ))
-      })
-  # --------------------------------------------------------------------------
-  
-  
-  output$textWithNumber2 <- renderText({ 
-    
-    HTML(paste0("Notice on the previous tab changing the inputs did not effect the relationship between the two curves.
-                  We can exploit this to help understanding. This means we can refer to one distribution, the standard normal. 
-                  This is the normal distribution with mean 0 and variance 1. Use only the 'alpha' and 'beta' sliders. 
-                  The 'Mean treatment effect under alternative hypothesis' and 'Standard deviation' are not needed and have no effect here."))
-  })
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$textWithNumber3 <- renderText({ 
-    
-    A <-  input$alpha
-    B <-  input$beta
+    A <-  alpha
+    B <-  beta
     C <-  qnorm(1-B) +  qnorm(1-A/2)
     CC <- qnorm(1-.1) + qnorm(1-0.05/2)
     D <-  qnorm(1-A/2)
@@ -639,21 +365,20 @@ server <- shinyServer(function(input, output) {
                 # "<br><b><br><b> ",
                 #  "What effect do I need to see in my study to get P=0.001 two sided, answer: "
                 # , tags$span(style="color:red", p3(qnorm(0.001/2,  mean=0, sd=1, lower.tail = FALSE ))),
-               ""
+                ""
     )) 
-  })
-  
+ 
   # --------------------------------------------------------------------------
   # take homes tab
-  output$textWithNumber4 <- renderText({ 
+ 
     
-    A <-  input$alpha
-    B <-  input$beta
+    A <-   alpha
+    B <-   beta
     C <-  qnorm(1-B) +  qnorm(1-A/2)
     CC <- qnorm(1-.1) + qnorm(1-0.05/2)
     D <-  qnorm(1-A/2)
     E <-  (1-pnorm(C))*2 
-    sd <- input$sd1  
+    sd <-  sd1  
     
     HTML(paste0("Here we can modify the 'Alpha, Type I error', 'Beta, Type II error' and 'Standard deviation' only. 
       First notice that changing the standard deviation has no 
@@ -693,34 +418,13 @@ server <- shinyServer(function(input, output) {
                 , tags$span(style="color:red", p3(1-B)) ,
                 ")) ="
                 , tags$span(style="color:red", p3(D/C)) ,
-
+                
                 ""
     )) 
-  })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  output$reg.plot <- renderPlot({         
-    
-    data1 <- make.regression()
-    
-    df <- data1 
-    
-    d=df$d 
-    limit=df$limit
-    x=df$x 
-    se1=df$se1
-    se2=df$se2
-    sigDiff=df$sigDiff
-    n1=df$n1 
-    n2=df$n2 
-    crit=df$crit
-    crit1=df$crit1
-    muDiff=df$muDiff
-    alpha=df$alpha
-    beta=df$beta
-    mu1=df$mu1
-    mu2=df$mu2
+ 
     
     #x <- seq(mu1-6*sigDiff, mu2+6*sigDiff, 0.1)
     
@@ -805,7 +509,7 @@ server <- shinyServer(function(input, output) {
       text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
       text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
       
-       
+      
       points(mu1 + sigDiff,      0, col="purple",     pch=4, cex=3, lwd=3) 
       
       legend(x=X11, Y*1 ,  "Legend:",
@@ -891,7 +595,7 @@ server <- shinyServer(function(input, output) {
       text(x=X1,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
       text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
       text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
-       
+      
       points(mu1 - sigDiff,      0, col="purple",     pch=4, cex=3, lwd=3) 
       
       legend(x=X11, Y*1 ,  "Legend:",
@@ -902,19 +606,19 @@ server <- shinyServer(function(input, output) {
              fill=c("green","forestgreen","red"),
              cex=1)
       
-     }  
+    }  
+    
  
-  })
   
   #---------------------------------------------------------------------------
   # take homes tab
-  output$norm.plot1 <- renderPlot({ 
+ 
     
-    sd <- input$sd1
-    A <-  input$alpha
-    B <-  input$beta
+    sd <- sd1
+    A <-  alpha
+    B <-  beta
     #PV<-  input$PV
-    pvalue2<-  input$pvalue2
+    pvalue2<-  pvalue2
     
     a <- 1-A/2
     b <- 1-B
@@ -984,20 +688,20 @@ server <- shinyServer(function(input, output) {
     zz <- qnorm(1- pvalue2/2)*sd
     points(zz,      0, col="orange",     pch=4, cex=3, lwd=3) 
     points(-zz,      0, col="orange",     pch=4, cex=3, lwd=3) 
-     
-  }) 
+    
+  
   
   #---------------------------------------------------------------------------
   # standard normal
   ###########################
-  output$norm.plot <- renderPlot({ 
+   
     
     mu1=0
     sd1=se1=1
     se1=se2=1
     
-    beta <- input$beta
-    alpha <- input$alpha
+    beta <- beta
+    alpha <- alpha
     crit1 <- qnorm(1-as.numeric(alpha/2))
     crit2 <- qnorm(1-as.numeric(beta))   #power
     
@@ -1080,7 +784,7 @@ server <- shinyServer(function(input, output) {
     text(x=X1,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
     text(x=X3,y=Y*shrink,  labels=paste0("This side of red line\nreject H0"),cex=1)
     text(x=mu1,y=Y*shrink,  labels=paste0("Between red lines\nfail to reject H0"),cex=1)
-     
+    
     
     legend(x=X11, Y*1 ,  "Legend:",
            legend=c(
@@ -1089,68 +793,16 @@ server <- shinyServer(function(input, output) {
              expression(paste("Type I error (",alpha,")"))),
            fill=c("green","#004987","red"),
            cex=1)
-
-  }) 
-  
-  # --------------------------------------------------------------------------
-  # Dummy line to trigger off button-press
-  
-  # simulate <- reactive({
-  #   
-  #  sample <- random.sample()
-  #    
-  #   sims <- 4999
-  #   mu1 <- 0  
-  #   mu2 <- input$mu2
-  #   sd1 <- input$sd1
-  #   sd2 <- input$sd1
-  #   alpha <- input$alpha
-  #   beta <- input$beta
-  #   
-  #   crit1 <- qnorm(1-as.numeric(alpha/2))
-  #   
-  #   muDiff  <-  mu2-mu1                  # true difference in means
-  #   
-  #  # n1 <- n2 <-(2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/sd1)^2 
-  #   
-  #   pow<-pwr::pwr.t.test(d=(muDiff)/sd1 ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample", alternative="two.sided")
-  #   n1  <- n2 <- pow$n
-  #   
-  #   x <- replicate(sims, 
-  #                  t.test(rnorm(n1,mu1,sd=sd1),
-  #                         rnorm(n2,mu2,sd=sd1), 
-  #                         conf.level=1-alpha, alternative="two.sided"))
-  #   
-  #   meanp <- mean(x["p.value",]<0.05)  #power
-  #   
-  #   medp <- median(unlist(x["p.value",]))
-  #   
-  #   theory <- 2*(1 - pnorm(crit1+qnorm(1-beta))) # expected pvalue
-  #   
-  #   d <- as.data.frame(cbind( alpha=alpha, beta=beta, meand=muDiff, sd=sd1,n1=n1, theory=theory, meanp = meanp , medp=medp) )
-  #   
-  #   namez <- c( "Alpha", "Beta", "Mean diff.", "Common SD in each group", "N per group", "Expected P-value", 
-  #               "Simulated Power", "Simulated Median P-Value")
-  #     
-  #   names(d) <- namez
-  #   
-  #  
-  #   
-  #   return(list(d=d))
-  #   
-  # }) 
-  ##################################################
-  
-  simulatex <- reactive({
     
-    sample <- random.samplex()
+   
+ 
     
-    sims <- input$sims
-    null <-   input$nullx
-    mu2 <-   input$mu2x
-    sd <-   input$sdx
-    alpha <- input$alphax
-    beta <-  input$betax
+    sims <- 1000
+    null <-   0
+    mu2 <-   mu2
+    sd <-   sd
+    alpha <- alpha
+    beta <-  beta
     
     theory <- 2*(1 - pnorm(qnorm(1-alpha/2) + qnorm(1-beta))) # expected pvalue at H1
     
@@ -1160,55 +812,23 @@ server <- shinyServer(function(input, output) {
     n <-(2*(qnorm(1-alpha/2) + qnorm(1-beta) )^2 ) / (d)^2  #power, obtain N
     
     
-  #  pow <- pwr::pwr.t.test(d=(mu2-null)/sd ,power=1-beta, sig.level=as.numeric(alpha), type="two.sample", 
-       #                    alternative="two.sided")
-    # not sure if this is helpful?
-     #x <- replicate(sims, mean(rnorm(n,0,d) + qnorm(1-beta) + qnorm(1-alpha/2) )); 
-    # 2*median(1-pnorm(x))
-    # 
-    # # expecting this to match true power...dont need this really as I get this below
-    # pow <- mean(replicate(sims, t.test(rnorm(n,null,sd),rnorm(n,mu2,sd), conf.level=.95, 
-    #                             alternative="two.sided") $p.value)<0.05)
-    # 
     
-   # n <- pow$n
-    
-    # expecting this to 50%
-    #p.simH1 <- mean(replicate(sims, t.test(rnorm(n,null,sd),rnorm(n,mu2,sd), conf.level=1-alpha, 
-     #                            alternative="two.sided", var.equal=TRUE,  paired = FALSE) $p.value)<theory)
-    
-   # sigDiff <- sqrt((sd^2/n) + (sd^2/n))
-    
+    dfx=n-1
+    # x <- (replicate(sims, t.test(rt(n, df=dfx), 
+    #                              rt(n, df=dfx)*sqrt(1 * (dfx-2)/dfx)+d,
+    #                              conf.level=.95, alternative="two.sided") $p.value))  
+    #   
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ok
-    #x <- (replicate(sims, t.test(rnorm(n,null,sd),
-     #                            rnorm(n,mu2, sd), conf.level=1-alpha, 
-      #                                     alternative="two.sided", var.equal=TRUE) $p.value))
-    #medp <- median(x)
-    #meanp <- mean(x <alpha) #
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ok
-    # # standardises scale using d
-    #x <- (replicate(sims, t.test(rnorm(n,0,1),rnorm(n, d,1), conf.level=.95, alternative="two.sided", var.equal=TRUE) $p.value))  
-    #medp <- median(x) # median pvalue if H1 true
-    #meanp <- mean(x <alpha) # power again
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~not checked
+    #sigDiff <- sqrt((sd^2/n) + (sd^2/n))
+    x <- (replicate(sims, t.test(rt(n,df=dfx, sd), 
+                                 rt(n, df=dfx, sd)*1+d, 
+                                 conf.level=1-alpha, paired = FALSE, alternative="two.sided") $p.value))  
+    #   
+    (medp <- median(x) )# median pvalue if H1 true
+    (meanp <- mean(x <alpha)) # power again
+    #   
     
-   # #try t dis?
-     dfx=n-1
-     # x <- (replicate(sims, t.test(rt(n, df=dfx), 
-     #                              rt(n, df=dfx)*sqrt(1 * (dfx-2)/dfx)+d,
-     #                              conf.level=.95, alternative="two.sided") $p.value))  
-   #   
-     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ok
-     #sigDiff <- sqrt((sd^2/n) + (sd^2/n))
-      x <- (replicate(sims, t.test(rt(n,df=dfx, sd), 
-                                  rt(n, df=dfx, sd)*1+d, 
-                                  conf.level=1-alpha, paired = FALSE, alternative="two.sided") $p.value))  
-   #   
-     medp <- median(x) # median pvalue if H1 true
-     meanp <- mean(x <alpha) # power again
-   #   
-     
-     
+    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # get the mean differnces see jow many are less than d expect 50%!
     # xx <- function() {
@@ -1219,7 +839,7 @@ server <- shinyServer(function(input, output) {
     # zz<- unlist(replicate(sims, xx()))
     # fiftyperc <-  sum(zz<=d)/length(zz)  
     
-     
+    
     # dd <- as.data.frame(cbind( alpha=alpha, beta=beta, meand=muDiff, sd=sd1, 
     #                           d=d,
     #                           n1=n1, theory=theory, meanp = meanp , medp=medp) )
@@ -1231,73 +851,18 @@ server <- shinyServer(function(input, output) {
     # 
     
     dd <- as.data.frame(cbind( alpha=alpha, beta=beta, power=1-beta, meand=muDiff, sd=sd, d=d , n=n) )
-   namez <- c( "Alpha", "Beta", "Power","Mean difference", "Common SD in each group", "Standardised Difference" , "N per group")
+    namez <- c( "Alpha", "Beta", "Power","Mean difference", "Common SD in each group", "Standardised Difference" , "N per group")
     names(dd) <- namez
-#    
-    dd1 <- as.data.frame(cbind( medp=medp,    p.simH1=p.simH1 , meanp=meanp ) )
-  tmp <- paste0("Probability P-Value is less than ",p6(theory)," at H1")
-   namez <- c(  "Simulated P-Value at H1",  tmp, "Simulated Power")
- names(dd1) <- namez
+    #    
+    # dd1 <- as.data.frame(cbind( medp=medp,    p.simH1=p.simH1 , meanp=meanp ) )
+    # tmp <- paste0("Probability P-Value is less than ",p6(theory)," at H1")
+    # namez <- c(  "Simulated P-Value at H1",  tmp, "Simulated Power")
+    # names(dd1) <- namez
+    # 
+    # namez <- c( "Expected P-Value at H1",   tmp )
+    # dd2 <- as.data.frame(cbind( medp=theory,   meanp=.5  ) )
+    # names(dd2) <- as.character(namez)
+    # 
     
-     namez <- c( "Expected P-Value at H1",   tmp )
-    dd2 <- as.data.frame(cbind( medp=theory,   meanp=.5  ) )
-    names(dd2) <- as.character(namez)
     
-  
-    
-    return(list(dd=dd, dd1=dd1, dd2=dd2))
-    
-  }) 
-  ##################################################
-  # https://stackoverflow.com/questions/57890921/how-do-i-stop-rendertable-from-defaulting-to-2-decimal-places
-  #####################################################
-  output$table <- renderTable({
-    
-    d <- (simulate()$d  )
-    
-    d<-data.frame(d)
- 
-    }, digits = c(6 ), colnames = TRUE)
-    
-  # --------------------------------------------------------------------------
-
-  output$tablex <- renderTable({
-    
-    dd <- (simulatex()$dd  )
-    
-   dd<- data.frame(dd)
-    
-  }, digits = c(6 ), colnames = TRUE)
-  # --------------------------------------------------------------------------
-  output$tablex1 <- renderTable({
-    
-    dd1 <- (simulatex()$dd1  )
-    
-   dd1<- data.frame(dd1)
-    
-  }, digits = c(6 ), colnames = TRUE)
-  # --------------------------------------------------------------------------
-  output$tablex2 <- renderTable({
-    
-    dd2 <- (simulatex()$dd2  )
-    
-   dd2<- data.frame(dd2)
-    
-  }, digits = c(6 ), colnames = TRUE)
-  #-------------------------------------------------------------------
-  # output$tablex2 <- DT::renderDataTable({
-  #  DT::datatable(simulatex()$dd2,
-  #  # dd2 <- (simulatex()$dd2 ),
-  #             colnames = c( "Expected P-Value @H1",  "Expected power", "Expected Prob." ),
-  #             options = list(pageLength = 50, autoWidth = TRUE,
-  #                            columnDefs = list(list(width = '800px', targets = c(2)))),filter='top')})  
-  
-  
-  
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-})
-
-# Run the application 
-shinyApp(ui = ui, server = server)
+   
