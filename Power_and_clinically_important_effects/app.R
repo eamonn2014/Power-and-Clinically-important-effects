@@ -23,9 +23,9 @@ options(width=100)
 ui <- fluidPage(theme = shinytheme("journal"),
                 
                 setBackgroundColor(
-                  color = c( "#C5DBE6", "#F7FBFF"), 
+                  color = c( "#8AA8CA", "#F7FBFF"), 
                   gradient = "linear",
-                  direction = "bottom"
+                  direction = "top"
                 ),
                 # App title ----
                 titlePanel(""),
@@ -41,13 +41,17 @@ ui <- fluidPage(theme = shinytheme("journal"),
                 
                # (h4("Introduction")),
                 
-                shinyUI(pageWithSidebar(
+                #shinyUI(pageWithSidebar(
                   
                 headerPanel("The relationship between power, alpha, beta, P-Values and clinical importance"),  # old titlepanel
                 
-              #  sidebarLayout(
-                  
+              sidebarLayout(
+               ##ABB0B4AF
                   sidebarPanel( 
+                    
+                   # tags$style(type="text/css", ".span8 .well { background-color: #00FFFF; }"),
+                  #  tags$style(".well {background-color:##CC9961 ;}"), 
+                    
                     p(strong("Introduction")),
                     div(p("When being introduced to frequentist power calculations invariably you will be taught using a figure showing
                     two normal distributions.
@@ -78,8 +82,8 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       actionButton(inputId='ab1', label="R code   ", 
                                    icon = icon("th"), 
                                    onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Power-and-Clinically-important-effects/master/Power_and_clinically_important_effects/Rcode.R', '_blank')"),
-                      
-                      
+              
+                      tags$style(".well {background-color:#9CC2EE ;}"), 
                     
                       br(), br(),  
                       div(strong("Select true population parameters and probability of errors:")),
@@ -111,21 +115,19 @@ A type I error rate of 5% two-sided. A power of 80%."),
                      div(p(" ")),
                    
                    
-                   tags$style(".well {background-color:##E0FFFF ;}"), ##ABB0B4AF
+                   
                    
                    tags$head(
                      tags$style(HTML('#ab1{background-color:orange}'))
                    ),
                    
-                   tags$head(
-                     tags$style(HTML('#resample{background-color:orange}'))
-                   ),
-                   
-                   
-                   
-                    # 
-                  ),
+                   # tags$head(
+                   #   tags$style(HTML('#resample{background-color:orange}'))
+                   # ),
                   
+                 
+                  ),
+               
                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~tab panels
                   mainPanel(
                     
@@ -217,7 +219,8 @@ A type I error rate of 5% two-sided. A power of 80%."),
                       
                     )))
                 )
-)
+                
+ 
 
 server <- shinyServer(function(input, output) {
   
