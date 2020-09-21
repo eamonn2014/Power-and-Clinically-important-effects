@@ -1,28 +1,29 @@
 ###################################################################################################
-  
-  
-# want different mus....
+# 1. First a simple simulation of power for a test 
+###################################################################################################  
 
-# simulate to show t test power~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+std1 <- 10
+sims <- 1000
+x1 <- rnorm(n, 10,std1)
+y1 <- rnorm(n, 11,std1)
+plot(density(x1),type="l",col="red", xlab="", ylab="", main="")
+lines(density(y1),col="green")
 
-# std1 =10
-# sims <- 1000  
-# x1 <- rnorm(n, 10,std1)
-# y1 <- rnorm(n, 11,std1)
-# plot(density(x1),type="l",col="red", xlab="", ylab="", main="")
-# lines(density(y1),col="green")
-# 
-# simulations <- replicate(sims, 
-#                          
-#                          t.test(x= rnorm(n, 10,std1), 
-#                                 y= rnorm(n, 11,std1), 
-#                                 paired=FALSE),
-#                          simplify=FALSE)
-# 
-# table(sapply(simulations, "[[", "p.value") < .05)/sims
+simulations <- replicate(sims,
 
+                         t.test(x= rnorm(n, 10,std1),
+                                y= rnorm(n, 11,std1),
+                                paired=FALSE),
+                         simplify=FALSE)
 
-# end of simulation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+table(sapply(simulations, "[[", "p.value") < .05)/sims
+
+###################################################################################################
+# End of simulation of power for a test 
+###################################################################################################  
+
+###################################################################################################
+# 2.code to present standard error distributions useful for teaching power calculations
 ###################################################################################################
 rm(list=ls())
 
