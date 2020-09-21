@@ -45,7 +45,7 @@ cex1 <- 1                       # font size
 cex2 <-.6   
 
 a <- 1-A/2
-b <- 1-B
+b <- 1-B  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # # power calculation
 #  pow <-  pwr.t.test(d=(muDiff)/std1 ,power=1-beta,
