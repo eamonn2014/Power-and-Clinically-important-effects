@@ -1476,7 +1476,7 @@ server <- shinyServer(function(input, output) {
             col='red',
             ylab='',xlab='Treatment Effect', 
             
-            main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+            main=paste("Figure 4: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
                        pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
             , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")          
       
@@ -1597,7 +1597,7 @@ server <- shinyServer(function(input, output) {
             col='red',
             ylab='',xlab='Treatment Effect', 
             
-            main=paste("Figure 4: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+            main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
                        pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
             , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")       
       
@@ -1679,7 +1679,7 @@ server <- shinyServer(function(input, output) {
             col='red',
             ylab='',xlab='Treatment Effect', 
             
-            main=paste("Figure 4: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+            main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
                        pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
             , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")           
       
