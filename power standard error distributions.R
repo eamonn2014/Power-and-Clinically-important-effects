@@ -5,7 +5,7 @@
 # simulate to show t test power~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # std1 =10
-# sims <- 1000
+# sims <- 1000  
 # x1 <- rnorm(n, 10,std1)
 # y1 <- rnorm(n, 11,std1)
 # plot(density(x1),type="l",col="red", xlab="", ylab="", main="")
