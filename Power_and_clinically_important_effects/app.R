@@ -1,15 +1,14 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rshiny ideas from on https://gallery.shinyapps.io/multi_regression/
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#library(DT)
+
 library(shiny)
-#library(nlme)
-#library(VCA)
 library(shinyWidgets)#
 library(pwr)
 options(max.print=1000000)
 fig.width <- 1200
 fig.height <- 450
+fig.height2 <- 315
 library(shinythemes)        # more funky looking apps
 p0 <- function(x) {formatC(x, format="f", digits=0)}
 p1 <- function(x) {formatC(x, format="f", digits=1)}
@@ -71,6 +70,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     p("Here the relationship between alpha, beta, the Z score, P-Value and clinical importance
                           are explored using the standard normal distribution."),
                     div(strong("4 Take home messages"), p("We show some relationships that are useful to remember.")),
+                    div(strong("5 Teaching"), p("Useful tab to allow user to compare how inputs affect the results.")),
                    # div(strong("5 Check results using simulation"), p("Finally we perform simulations to check the results.")),
                     
                     div(
@@ -82,7 +82,10 @@ ui <- fluidPage(theme = shinytheme("journal"),
                       actionButton(inputId='ab1', label="R code   ", 
                                    icon = icon("th"), 
                                    onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Power-and-Clinically-important-effects/master/Power_and_clinically_important_effects/Rcode.R', '_blank')"),
-              
+                      actionButton(inputId='ab1', label="R code for tab 5  ", 
+                                   icon = icon("th"), 
+                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Power-and-Clinically-important-effects/master/power%20standard%20error%20distributions.R', '_blank')"),
+                      
                       tags$style(".well {background-color:#9CC2EE ;}"), 
                     
                       br(), br(),  
@@ -218,7 +221,7 @@ A type I error rate of 5% two-sided. A power of 80%."),
                       
                       tabPanel("5 Teaching", 
                                
-                          tags$hr(),
+                          #tags$hr(),
                                splitLayout(
                                  textInput('mu1a', 
                                            div(h5(tags$span(style="color:blue", "Null Mean"))), "1"),
@@ -233,11 +236,11 @@ A type I error rate of 5% two-sided. A power of 80%."),
                                            div(h5(tags$span(style="color:blue", "beta"))), ".1"),
                                  
                                  textInput('stda', 
-                                           div(h5(tags$span(style="color:blue", "poukation sd"))), "10")
+                                           div(h5(tags$span(style="color:blue", "population sd"))), "10")
                                ),
                                
-                              div(plotOutput("teach.plot", width=fig.width, height=fig.height)),
-                              tags$hr(),
+                              div(plotOutput("teach.plot", width=fig.width, height=fig.height2)),
+                           #   tags$hr(),
                               
                               splitLayout(
                                 textInput('mu1b', 
@@ -253,11 +256,11 @@ A type I error rate of 5% two-sided. A power of 80%."),
                                           div(h5(tags$span(style="color:blue", "beta"))), ".1"),
                                 
                                 textInput('stdb', 
-                                          div(h5(tags$span(style="color:blue", "poukation sd"))), "10")
+                                          div(h5(tags$span(style="color:blue", "population sd"))), "10")
                               ),
                               
                               
-                          div(plotOutput("teach.plot2", width=fig.width, height=fig.height)),
+                          div(plotOutput("teach.plot2", width=fig.width, height=fig.height2)),
                                
                     
                                width = 12 )
@@ -1362,7 +1365,7 @@ server <- shinyServer(function(input, output) {
     
     gap <- 0.001
     cex1 <- 1   # font size
-    cex2 <-.6   
+    cex2 <- 1
     
     a <- 1-A/2
     b <- 1-B  
@@ -1391,9 +1394,8 @@ server <- shinyServer(function(input, output) {
             col='red',
             ylab='',xlab='Treatment Effect', 
             
-            main=paste("Figure 1: Sampling distribution of the null in red, mean=",p2(mu1),"
-        & alternative hypothesised treatment effect",p2(muDiff),"
-                  pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
+            main=paste("Figure 4: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+                       pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
             , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")          
       
       curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
@@ -1448,7 +1450,7 @@ server <- shinyServer(function(input, output) {
       
       #total
       arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
-      text(x=   mu1+(mu2-mu1)/2 , y=.36*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+      text(x=   mu1+(mu2-mu1)/2 , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
                                                              p2(mu2-mu1), ""),cex= cex2)
       
       legend(x=mu1-5*se , .4*fact ,  "Legend:",
@@ -1474,9 +1476,8 @@ server <- shinyServer(function(input, output) {
             col='red',
             ylab='',xlab='Treatment Effect', 
             
-            main=paste("Figure 1: Sampling distribution of the null in red, mean=",p2(mu1),"
-        & alternative hypothesised treatment effect",p2(muDiff),"
-                  pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
+            main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+                       pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
             , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")          
       
       curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
@@ -1532,16 +1533,16 @@ server <- shinyServer(function(input, output) {
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       # total
       arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
-      text(x= mu1-  abs(muDiff/2) , y=.36*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+      text(x= mu1-  abs(muDiff/2) , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
                                                                p2(se*qnorm(a)+qnorm(b)*se), ""),cex= cex2)
       
-      legend(x=mu1-6*se  , .35*fact ,  "Legend:",
+      legend(x=mu1-7*se  , .35*fact ,  "Legend:",
              legend=c(
                expression(paste("Power (1-",beta,")")),
                expression(paste("Type II error (",beta,")   ")),
                expression(paste("Type I error (",alpha,")"))),
              fill=c("green","forestgreen","red"),
-             cex=.7, bty = "n")
+             cex=1, bty = "n")
     }
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1567,7 +1568,7 @@ server <- shinyServer(function(input, output) {
     
     gap <- 0.001
     cex1 <- 1   # font size
-    cex2 <-.6   
+    cex2 <- 1   
     
     a <- 1-A/2
     b <- 1-B  
@@ -1653,7 +1654,7 @@ server <- shinyServer(function(input, output) {
       
       #total
       arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
-      text(x=   mu1+(mu2-mu1)/2 , y=.36*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+      text(x=   mu1+(mu2-mu1)/2 , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
                                                              p2(mu2-mu1), ""),cex= cex2)
       
       legend(x=mu1-5*se , .4*fact ,  "Legend:",
@@ -1737,16 +1738,16 @@ server <- shinyServer(function(input, output) {
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       # total
       arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
-      text(x= mu1-  abs(muDiff/2) , y=.36*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+      text(x= mu1-  abs(muDiff/2) , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
                                                                p2(se*qnorm(a)+qnorm(b)*se), ""),cex= cex2)
       
-      legend(x=mu1-6*se  , .35*fact ,  "Legend:",
+      legend(x=mu1-7*se  , .35*fact ,  "Legend:",
              legend=c(
                expression(paste("Power (1-",beta,")")),
                expression(paste("Type II error (",beta,")   ")),
                expression(paste("Type I error (",alpha,")"))),
              fill=c("green","forestgreen","red"),
-             cex=.7, bty = "n")
+             cex=1, bty = "n")
     }
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
