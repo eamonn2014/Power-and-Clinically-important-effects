@@ -116,6 +116,12 @@ ui <- fluidPage(theme = shinytheme("journal"),
                     tags$a(href = "https://errorstatistics.com/2014/03/17/stephen-senn-on-how-to-interpret-discrepancies-against-which-a-test-has-high-power-guest-post/", "[2] Stephen Senn, 
 To duplicate select, between-patient standard deviation of 9 and a clinically relevant difference of 4. 
 A type I error rate of 5% two-sided. A power of 80%."),
+                   div(p(" ")),
+                   
+                   tags$a(href = " https://statmodeling.stat.columbia.edu/2017/12/04/80-power-lie/", "[2] Andrew Gelman"),
+                  
+                   
+                   
                      div(p(" ")),
                    
                    
