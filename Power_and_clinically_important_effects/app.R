@@ -17,6 +17,7 @@ p3 <- function(x) {formatC(x, format="f", digits=3)}
 p4 <- function(x) {formatC(x, format="f", digits=4)}
 p6 <- function(x) {formatC(x, format="f", digits=6)}
 options(width=100)
+options(scipen=999)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ui <- fluidPage(theme = shinytheme("journal"),
@@ -286,24 +287,27 @@ A type I error rate of 5% two-sided. A power of 80%."),
                                ),
                                
                                div(plotOutput("gelman", width=fig.width, height=fig.height2)),
+                               
+                              h4(htmlOutput("textgelman",) ),
+                               
                                #   tags$hr(),
                                
-                               splitLayout(
-                                 textInput('mu1bg', 
-                                           div(h5(tags$span(style="color:blue", "Null Mean"))), "0"),
-                                 
-                                 textInput('mu2bg', 
-                                           div(h5(tags$span(style="color:blue", "Alternative mean"))), "1"),
-                                 
-                                 textInput('alphabg', 
-                                           div(h5(tags$span(style="color:blue", "alpha 2 sided"))), ".05"),
-                                 
-                                 textInput('betabg', 
-                                           div(h5(tags$span(style="color:blue", "beta"))), ".2"),
-                                 
-                                 textInput('stdbg', 
-                                           div(h5(tags$span(style="color:blue", "population sd"))), "1")
-                               ),
+                               # splitLayout(
+                               #   textInput('mu1bg', 
+                               #             div(h5(tags$span(style="color:blue", "Null Mean"))), "0"),
+                               #   
+                               #   textInput('mu2bg', 
+                               #             div(h5(tags$span(style="color:blue", "Alternative mean"))), "1"),
+                               #   
+                               #   textInput('alphabg', 
+                               #             div(h5(tags$span(style="color:blue", "alpha 2 sided"))), ".05"),
+                               #   
+                               #   textInput('betabg', 
+                               #             div(h5(tags$span(style="color:blue", "beta"))), ".2"),
+                               #   
+                               #   textInput('stdbg', 
+                               #             div(h5(tags$span(style="color:blue", "population sd"))), "1")
+                               # ),
                                
                                
                                div(plotOutput("gelman2", width=fig.width, height=fig.height2)),
@@ -600,6 +604,14 @@ server <- shinyServer(function(input, output) {
     }
   })
   # --------------------------------------------------------------------------
+  
+  
+  output$textgelman <- renderText({ 
+    
+    HTML(paste0( "Above ......................"))
+    
+  })
+  
   
   output$textWithNumber1 <- renderText({ 
     
@@ -2006,12 +2018,16 @@ server <- shinyServer(function(input, output) {
   
   
   
-  
-  
-  
-  
-  
-  
+ #  
+ #  
+ # mu1= mu1ag=0
+ #  mu2=mu2ag=1
+ #  alpha=alphaag=0.05
+ #  beta=betaag=0.2
+ #  std1=stdag=1
+ #  
+ #  
+ #  
   
   
   
@@ -2061,15 +2077,25 @@ server <- shinyServer(function(input, output) {
       y <-   dnorm(x, mean =0, sd= se)         # helps with plotting
       fact <- 1/(max(num)/max(y))              # helps with plotting
       
+      
+      pv1 <- p2(qnorm(a)+qnorm(b)+qnorm(.975))
+      pv2 <- p2(qnorm(a)+qnorm(b)-qnorm(.975))
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to =upper ,  
-            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            bty="n",yaxt="n",lwd=2,  xaxt="n", 
             col='red',
-            ylab='',xlab='Treatment Effect', 
+            ylab='',xlab='z score', 
             
             main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
                        pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
-            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")       
+         #   , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta; 95% of the time we’d see z-scores between", p2(qnorm(a)+qnorm(b)+qnorm(.975))," and ",p2(qnorm(a)+qnorm(b)+qnorm(.975)),)       
+      , sub=paste0("When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta; 95% of the time we’d see z-scores between ",pv2, " and ",pv1,""))       
+  
+      axis(side=1, at = c(mu2-mu1), labels=c( p2(qnorm(a)+qnorm(b)) )  )
+      
+      axis(side=1, at = c(qnorm(a)*(se)), labels=c( p2(qnorm(a)) )  )
+ 
+      
       
       curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
       
@@ -2144,14 +2170,25 @@ server <- shinyServer(function(input, output) {
       fact <- 1/(max(num)/max(y))              # helps with plotting
       se.for.plot <- se                        # helps with plotting
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+      pv1 <- p2(qnorm(a)+qnorm(b)+qnorm(.975))
+      pv2 <- p2(qnorm(a)+qnorm(b)-qnorm(.975))
+      
       curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to = upper , 
-            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            bty="n",yaxt="n",lwd=2,  xaxt="n", 
             col='red',
-            ylab='',xlab='Treatment Effect', 
+            ylab='',xlab='Z score', 
             
             main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
                        pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
-            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")           
+         #   , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")    
+      , sub=paste0("When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta; 95% of the time we’d see z-scores between ",pv2, " and ",pv1,""))      
+      
+     #  x axis labels
+      axis(side=1, at = c(mu2), labels=c( p2(qnorm(a)+qnorm(b)) )  )
+      
+      axis(side=1, at = c(mu1-qnorm(a)*(se)),              labels=c( p2(qnorm(a)) )  )
+      
       
       curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
       
@@ -2225,15 +2262,15 @@ server <- shinyServer(function(input, output) {
   # teaching tab, repeat of teach plot code
   output$gelman2<- renderPlot({ 
     
-    mu1 <- as.numeric(unlist(strsplit(input$mu1bg,",")))
+    mu1 <- as.numeric(unlist(strsplit(input$mu1ag,",")))
     
-    mu2 <- as.numeric(unlist(strsplit(input$mu2bg,",")))
+    mu2 <- as.numeric(unlist(strsplit(input$mu2ag,",")))
     
-    alpha <- as.numeric(unlist(strsplit(input$alphabg,",")))
+    alpha <- as.numeric(unlist(strsplit(input$alphaag,",")))
     
-    beta <- as.numeric(unlist(strsplit(input$betabg,",")))
+    beta <- as.numeric(unlist(strsplit(input$betaag,",")))
     
-    std1 <- as.numeric(unlist(strsplit(input$stdbg,",")))
+    std1 <- as.numeric(unlist(strsplit(input$stdag,",")))
     
     muDiff  <-  mu2-mu1   
     
@@ -2265,17 +2302,26 @@ server <- shinyServer(function(input, output) {
       y <-   dnorm(x, mean =0, sd= se)         # helps with plotting
       fact <- 1/(max(num)/max(y))              # helps with plotting
       
+      pv1 <- (2*(1-pnorm(qnorm(a)+qnorm(b)+qnorm(.975))))
+      pv2 <- (2*(1-pnorm(qnorm(a)+qnorm(b)-qnorm(.975))))
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to =upper ,  
-            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            bty="n",yaxt="n",lwd=2,  xaxt="n", 
             col='red',
-            ylab='',xlab='Treatment Effect', 
+            ylab='',xlab='P-Value', 
             
             main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
                        pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
-            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")       
+         #   , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")       
+      , sub=paste0("When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta; 95% of the time we’d see p-values between ",pv2, " and ",pv1,""))  
       
       curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+      
+      
+      axis(side=1, at = c(mu2-mu1), labels=c( p4(2*(1-pnorm(qnorm(a)+qnorm(b)) )  )))
+      
+      axis(side=1, at = c(qnorm(a)*(se)), labels=c( p4(2*(1-pnorm(qnorm(a)) )  )))
+      
       
       xx <-      seq(  mu1+qnorm(a)*se, upper,   by=gap) # null upper limit  -> 
       xxx <-     seq(  lower, mu1+qnorm(a)*se,   by=gap) # -> null upper limit
@@ -2348,16 +2394,27 @@ server <- shinyServer(function(input, output) {
       fact <- 1/(max(num)/max(y))              # helps with plotting
       se.for.plot <- se                        # helps with plotting
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      pv1 <- (2*(1-pnorm(qnorm(a)+qnorm(b)+qnorm(.975))))
+      pv2 <- (2*(1-pnorm(qnorm(a)+qnorm(b)-qnorm(.975))))
+      
       curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to = upper , 
-            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            bty="n",yaxt="n",lwd=2,  xaxt="n", 
             col='red',
-            ylab='',xlab='Treatment Effect', 
+            ylab='',xlab='P-Value', 
             
             main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
                        pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
-            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")           
+       #     , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")           
+      , sub=paste0("When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta; 95% of the time we’d see P-values between ",pv2, " and ",pv1,""))  
+      
       
       curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+      
+      axis(side=1, at = c(mu2), labels=c( p4(2*(1-pnorm(qnorm(a)+qnorm(b)) )  )))
+      
+      axis(side=1, at = c(mu1-qnorm(a)*(se)), labels=c( p4(2*(1-pnorm(qnorm(a)) )  )))
+       
+      
       
       xx <-      seq(  mu1+qnorm(a)*se, upper,   by=gap) # null upper limit  -> 
       xxx <-     seq(  mu1+qnorm(a)*se, upper,  by=gap) # -> null upper limit
