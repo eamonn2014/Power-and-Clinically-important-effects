@@ -196,7 +196,7 @@ A type I error rate of 5% two-sided. A power of 80%."),
                                div( verbatimTextOutput("ssize"))
                       ) ,
                       
-                      tabPanel("3 Statistically significant but clinically unimportant results", 
+                      tabPanel("3 Statistically significant clinically unimportant results", 
                                div(plotOutput("norm.plot", width=fig.width, height=fig.height)),
                                h4(htmlOutput("textWithNumber2",) ) ,
                                h4(htmlOutput("textWithNumber3",) ) ,
@@ -263,6 +263,52 @@ A type I error rate of 5% two-sided. A power of 80%."),
                           div(plotOutput("teach.plot2", width=fig.width, height=fig.height2)),
                                
                     
+                               width = 12 ),
+                      
+                      tabPanel("6 pvalues", 
+                               
+                               #tags$hr(),
+                               splitLayout(
+                                 textInput('mu1ag', 
+                                           div(h5(tags$span(style="color:blue", "Null Mean"))), "0"),
+                                 
+                                 textInput('mu2ag', 
+                                           div(h5(tags$span(style="color:blue", "Alternative mean"))), "1"),
+                                 
+                                 textInput('alphaag', 
+                                           div(h5(tags$span(style="color:blue", "alpha 2 sided"))), ".05"),
+                                 
+                                 textInput('betaag', 
+                                           div(h5(tags$span(style="color:blue", "beta"))), ".2"),
+                                 
+                                 textInput('stdag', 
+                                           div(h5(tags$span(style="color:blue", "population sd"))), "1")
+                               ),
+                               
+                               div(plotOutput("gelman", width=fig.width, height=fig.height2)),
+                               #   tags$hr(),
+                               
+                               splitLayout(
+                                 textInput('mu1bg', 
+                                           div(h5(tags$span(style="color:blue", "Null Mean"))), "0"),
+                                 
+                                 textInput('mu2bg', 
+                                           div(h5(tags$span(style="color:blue", "Alternative mean"))), "1"),
+                                 
+                                 textInput('alphabg', 
+                                           div(h5(tags$span(style="color:blue", "alpha 2 sided"))), ".05"),
+                                 
+                                 textInput('betabg', 
+                                           div(h5(tags$span(style="color:blue", "beta"))), ".2"),
+                                 
+                                 textInput('stdbg', 
+                                           div(h5(tags$span(style="color:blue", "population sd"))), "1")
+                               ),
+                               
+                               
+                               div(plotOutput("gelman2", width=fig.width, height=fig.height2)),
+                               
+                               
                                width = 12 )
                  
                       
@@ -1662,7 +1708,635 @@ server <- shinyServer(function(input, output) {
                expression(paste("Type II error (",beta,")   ")),
                expression(paste("Type I error (",alpha,")"))),
              fill=c("green","forestgreen","red"),
-             cex=.7, bty = "n")
+             cex=1, bty = "n")
+      
+    } else {
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+      upper = mu1+6*se                         # for plotting
+      lower = mu2-6*se    
+      x <- seq(-7*se, 6*se, 0.01)  
+      num <- dnorm(x, mean =0, sd= 1)
+      y <-   dnorm(x, mean =0, sd= se)
+      fact <- 1/(max(num)/max(y))              # helps with plotting
+      se.for.plot <- se                        # helps with plotting
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to = upper , 
+            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            col='red',
+            ylab='',xlab='Treatment Effect', 
+            
+            main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+                       pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
+            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")           
+      
+      curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+      
+      xx <-      seq(  mu1+qnorm(a)*se, upper,   by=gap) # null upper limit  -> 
+      xxx <-     seq(  mu1+qnorm(a)*se, upper,  by=gap) # -> null upper limit
+      xxxx <-    seq(  lower, mu1-qnorm(a)*se,   by=gap) # -> null lower limit
+      xxxxx <-     seq(  lower, mu1+qnorm(a)*se,   by=gap) # -> null upper limit
+      
+      # type I error
+      polygon(x = c(mu1+qnorm(a)*se,                           xx,  upper),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xx),     0),
+              col="red")
+      
+      #type II error 
+      polygon(x = c(lower,                           xxxxx,  mu2+qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,      xxxxx),    0),
+              col="forestgreen")
+      
+      # power
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,     xxxx),     0),
+              col="lightgreen")
+      
+      # type I error
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xxxx),     0),
+              col="red")
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      abline(v= mu1-qnorm(a)*(se), col="blue",  lwd=1,  lty=3) 
+      abline(v= mu2,               col="blue",  lwd=1,  lty=3)
+      abline(v= mu1,               col="blue",  lwd=1,  lty=3)  
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # +/-se
+      text(x=mu1,y=.26*fact,  labels=paste0("SE =  +/- ",p2(se),""),cex= cex2)
+      arrows( mu1, .24*fact,  mu1+se, .24*fact, col = 1:3, code=2)
+      arrows( mu1, .24*fact,  mu1-se, .24*fact, col = 1:3)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # typeI
+      arrows(mu1, .3*fact, mu1-qnorm(a)*(se), .3*fact, col = "red")
+      text(x=mu1-qnorm(a)*(se)/2, y=.32*fact,  labels=paste0( p2(qnorm(a))   ,
+                                                              "xSE= ", p2(qnorm(a)*(se)), ""),cex= cex2)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # type II
+      if (b>0.5) {  
+        arrows(mu2 , .20*fact, mu1-qnorm(a)*se, .20*fact,    col = "blue", lwd=1.5)
+      } else {
+        arrows(mu1-qnorm(a)*se , .20*fact, mu2 , .20*fact,    col = "blue", lwd=1.5)
+      }
+      
+      text(x=   mu2+(qnorm(b)*se)/2, y=.18*fact,  
+           labels=paste0(p2(qnorm(b)),"xSE= ", p2(qnorm(b)*se), ""),cex= cex2)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # total
+      arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
+      text(x= mu1-  abs(muDiff/2) , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+                                                               p2(se*qnorm(a)+qnorm(b)*se), ""),cex= cex2)
+      
+      legend(x=mu1-7*se  , .35*fact ,  "Legend:",
+             legend=c(
+               expression(paste("Power (1-",beta,")")),
+               expression(paste("Type II error (",beta,")   ")),
+               expression(paste("Type I error (",alpha,")"))),
+             fill=c("green","forestgreen","red"),
+             cex=1, bty = "n")
+    }
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+  }) 
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  # teaching tab
+  output$teach.plot <- renderPlot({ 
+    
+    mu1 <- as.numeric(unlist(strsplit(input$mu1a,",")))
+    
+    mu2 <- as.numeric(unlist(strsplit(input$mu2a,",")))
+    
+    alpha <- as.numeric(unlist(strsplit(input$alphaa,",")))
+    
+    beta <- as.numeric(unlist(strsplit(input$betaa,",")))
+    
+    std1 <- as.numeric(unlist(strsplit(input$stda,",")))
+    
+    muDiff  <-  mu2-mu1   
+    
+    A <- alpha  
+    B <- beta   
+    
+    gap <- 0.001
+    cex1 <- 1   # font size
+    cex2 <- 1
+    
+    a <- 1-A/2
+    b <- 1-B  
+    
+    crit1 <- qnorm(1-as.numeric(alpha/2))
+    
+    n <-ceiling((2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/std1)^2 )
+    
+    se <- sqrt(std1^2/n + std1^2/n)  # se. of diff.
+    
+    if (muDiff > 0) {
+      
+      ###################################################################################################
+      ###################################################################################################
+      ###################################################################################################
+      lower = mu1-6*se                         # for plotting
+      upper = mu2+6*se                         # for plotting
+      x <- seq(-6*se, 6*se, 0.01)              # for dnorm
+      num <- dnorm(x, mean =0, sd= 1)          # helps with plotting
+      y <-   dnorm(x, mean =0, sd= se)         # helps with plotting
+      fact <- 1/(max(num)/max(y))              # helps with plotting
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to =upper ,  
+            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            col='red',
+            ylab='',xlab='Treatment Effect', 
+            
+            main=paste("Figure 4: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+                       pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
+            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")          
+      
+      curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+      
+      xx <-      seq(  mu1+qnorm(a)*se, upper,   by=gap) # null upper limit  -> 
+      xxx <-     seq(  lower, mu1+qnorm(a)*se,   by=gap) # -> null upper limit
+      xxxx <-    seq(  lower, mu1-qnorm(a)*se,   by=gap) # -> null lower limit
+      
+      # power
+      polygon(x = c(mu1+qnorm(a)*se,                           xx,  upper),
+              y = c(0 , dnorm(mean=mu2, sd=se,     xx),     0),
+              col="lightgreen")
+      
+      # type I error
+      polygon(x = c(mu1+qnorm(a)*se,                       xx,  upper),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xx),     0),
+              col="red")
+      
+      # type I error
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xxxx),     0),
+              col="red")
+      
+      #type II error area, beta
+      polygon(x = c(lower,                           xxx,  mu1+qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,      xxx),    0),
+              col="forestgreen")
+      
+      abline(v= mu1+qnorm(a)*se,   col="blue",  lwd=1,  lty=3)   # meeting of power and alpha level
+      abline(v= mu2,               col="blue",  lwd=1,  lty=3)   # alt hyp
+      abline(v= mu1,               col="blue",  lwd=1,  lty=3)  # null
+      
+      #adding arrows
+      # +/-se
+      text( x=mu1,y=.26*fact,  labels=paste0("SE =  +/- ",p2(se),""),cex= cex2)
+      arrows( mu1,  .24*fact,  mu1+se, .24*fact, col = 1:3, code=2)
+      arrows( mu1,  .24*fact,  mu1-se, .24*fact, col = 1:3)
+      
+      # type I
+      arrows(mu1, .3*fact, mu1+qnorm(a)*(se), .3*fact, col = "red")
+      text(x=mu1+qnorm(a)*(se)/2, y=.32*fact,  
+           labels=paste0( p2(qnorm(a)),"xSE= ", p2(qnorm(a)*(se)), ""),cex= cex2)
+      
+      # typeII
+      if (b<0.5) { 
+        arrows(mu1+qnorm(a)*(se), .2*fact,   mu2, .2*fact, col = "blue", lwd=1.5)
+      } else {
+        arrows(mu2, .2*fact,   mu1+qnorm(a)*(se), .2*fact, col = "blue", lwd=1.5)
+      }
+      text(x= mu2-( +se*qnorm(b))/2, y=.18*fact,  
+           labels=paste0(p2(qnorm(b)),"xSE=", p2(qnorm(b)*se), ""),cex= cex2) #se
+      
+      #total
+      arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
+      text(x=   mu1+(mu2-mu1)/2 , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+                                                             p2(mu2-mu1), ""),cex= cex2)
+      
+      legend(x=mu1-5*se , .4*fact ,  "Legend:",
+             legend=c(
+               expression(paste("Power (1-",beta,")")),
+               expression(paste("Type II error (",beta,")   ")),
+               expression(paste("Type I error (",alpha,")"))),
+             fill=c("green","forestgreen","red"),
+             cex=1, bty = "n")
+      
+    } else {
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+      upper = mu1+6*se                         # for plotting
+      lower = mu2-6*se    
+      x <- seq(-7*se, 6*se, 0.01)  
+      num <- dnorm(x, mean =0, sd= 1)
+      y <-   dnorm(x, mean =0, sd= se)
+      fact <- 1/(max(num)/max(y))              # helps with plotting
+      se.for.plot <- se                        # helps with plotting
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to = upper , 
+            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            col='red',
+            ylab='',xlab='Treatment Effect', 
+            
+            main=paste("Figure 4: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+                       pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
+            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")          
+      
+      curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+      
+      xx <-      seq(  mu1+qnorm(a)*se, upper,   by=gap) # null upper limit  -> 
+      xxx <-     seq(  mu1+qnorm(a)*se, upper,  by=gap) # -> null upper limit
+      xxxx <-    seq(  lower, mu1-qnorm(a)*se,   by=gap) # -> null lower limit
+      xxxxx <-     seq(  lower, mu1+qnorm(a)*se,   by=gap) # -> null upper limit
+      
+      # type I error
+      polygon(x = c(mu1+qnorm(a)*se,                           xx,  upper),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xx),     0),
+              col="red")
+      
+      #type II error 
+      polygon(x = c(lower,                           xxxxx,  mu2+qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,      xxxxx),    0),
+              col="forestgreen")
+      
+      # power
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,     xxxx),     0),
+              col="lightgreen")
+      
+      # type I error
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xxxx),     0),
+              col="red")
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      abline(v= mu1-qnorm(a)*(se), col="blue",  lwd=1,  lty=3) 
+      abline(v= mu2,               col="blue",  lwd=1,  lty=3)
+      abline(v= mu1,               col="blue",  lwd=1,  lty=3)  
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # +/-se
+      text(x=mu1,y=.26*fact,  labels=paste0("SE =  +/- ",p2(se),""),cex= cex2)
+      arrows( mu1, .24*fact,  mu1+se, .24*fact, col = 1:3, code=2)
+      arrows( mu1, .24*fact,  mu1-se, .24*fact, col = 1:3)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # typeI
+      arrows(mu1, .3*fact, mu1-qnorm(a)*(se), .3*fact, col = "red")
+      text(x=mu1-qnorm(a)*(se)/2, y=.32*fact,  labels=paste0( p2(qnorm(a))   ,
+                                                              "xSE= ", p2(qnorm(a)*(se)), ""),cex= cex2)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # type II
+      if (b>0.5) {  
+        arrows(mu2 , .20*fact, mu1-qnorm(a)*se, .20*fact,    col = "blue", lwd=1.5)
+      } else {
+        arrows(mu1-qnorm(a)*se , .20*fact, mu2 , .20*fact,    col = "blue", lwd=1.5)
+      }
+      
+      text(x=   mu2+(qnorm(b)*se)/2, y=.18*fact,  
+           labels=paste0(p2(qnorm(b)),"xSE= ", p2(qnorm(b)*se), ""),cex= cex2)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # total
+      arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
+      text(x= mu1-  abs(muDiff/2) , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+                                                               p2(se*qnorm(a)+qnorm(b)*se), ""),cex= cex2)
+      
+      legend(x=mu1-7*se  , .35*fact ,  "Legend:",
+             legend=c(
+               expression(paste("Power (1-",beta,")")),
+               expression(paste("Type II error (",beta,")   ")),
+               expression(paste("Type I error (",alpha,")"))),
+             fill=c("green","forestgreen","red"),
+             cex=1, bty = "n")
+    }
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+  }) 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # gelman, repeat of teach plot code
+  output$gelman <- renderPlot({ 
+    
+    mu1 <- as.numeric(unlist(strsplit(input$mu1ag,",")))
+    
+    mu2 <- as.numeric(unlist(strsplit(input$mu2ag,",")))
+    
+    alpha <- as.numeric(unlist(strsplit(input$alphaag,",")))
+    
+    beta <- as.numeric(unlist(strsplit(input$betaag,",")))
+    
+    std1 <- as.numeric(unlist(strsplit(input$stdag,",")))
+    
+    muDiff  <-  mu2-mu1   
+    
+    A <- alpha  
+    B <- beta   
+    
+    gap <- 0.001
+    cex1 <- 1   # font size
+    cex2 <- 1   
+    
+    a <- 1-A/2
+    b <- 1-B  
+    
+    crit1 <- qnorm(1-as.numeric(alpha/2))
+    
+    n <-ceiling((2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/std1)^2 )
+    
+    se <- sqrt(std1^2/n + std1^2/n)  # se. of diff.
+    
+    if (muDiff > 0) {
+      
+      ###################################################################################################
+      ###################################################################################################
+      ###################################################################################################
+      lower = mu1-6*se                         # for plotting
+      upper = mu2+6*se                         # for plotting
+      x <- seq(-6*se, 6*se, 0.01)              # for dnorm
+      num <- dnorm(x, mean =0, sd= 1)          # helps with plotting
+      y <-   dnorm(x, mean =0, sd= se)         # helps with plotting
+      fact <- 1/(max(num)/max(y))              # helps with plotting
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to =upper ,  
+            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            col='red',
+            ylab='',xlab='Treatment Effect', 
+            
+            main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+                       pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
+            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")       
+      
+      curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+      
+      xx <-      seq(  mu1+qnorm(a)*se, upper,   by=gap) # null upper limit  -> 
+      xxx <-     seq(  lower, mu1+qnorm(a)*se,   by=gap) # -> null upper limit
+      xxxx <-    seq(  lower, mu1-qnorm(a)*se,   by=gap) # -> null lower limit
+      
+      # power
+      polygon(x = c(mu1+qnorm(a)*se,                           xx,  upper),
+              y = c(0 , dnorm(mean=mu2, sd=se,     xx),     0),
+              col="lightgreen")
+      
+      # type I error
+      polygon(x = c(mu1+qnorm(a)*se,                       xx,  upper),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xx),     0),
+              col="red")
+      
+      # type I error
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xxxx),     0),
+              col="red")
+      
+      #type II error area, beta
+      polygon(x = c(lower,                           xxx,  mu1+qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,      xxx),    0),
+              col="forestgreen")
+      
+      abline(v= mu1+qnorm(a)*se,   col="blue",  lwd=1,  lty=3)   # meeting of power and alpha level
+      abline(v= mu2,               col="blue",  lwd=1,  lty=3)   # alt hyp
+      abline(v= mu1,               col="blue",  lwd=1,  lty=3)  # null
+      
+      #adding arrows
+      # +/-se
+      text( x=mu1,y=.26*fact,  labels=paste0("SE =  +/- ",p2(se),""),cex= cex2)
+      arrows( mu1,  .24*fact,  mu1+se, .24*fact, col = 1:3, code=2)
+      arrows( mu1,  .24*fact,  mu1-se, .24*fact, col = 1:3)
+      
+      # type I
+      arrows(mu1, .3*fact, mu1+qnorm(a)*(se), .3*fact, col = "red")
+      text(x=mu1+qnorm(a)*(se)/2, y=.32*fact,  
+           labels=paste0( p2(qnorm(a)),"xSE= ", p2(qnorm(a)*(se)), ""),cex= cex2)
+      
+      # typeII
+      if (b<0.5) { 
+        arrows(mu1+qnorm(a)*(se), .2*fact,   mu2, .2*fact, col = "blue", lwd=1.5)
+      } else {
+        arrows(mu2, .2*fact,   mu1+qnorm(a)*(se), .2*fact, col = "blue", lwd=1.5)
+      }
+      text(x= mu2-( +se*qnorm(b))/2, y=.18*fact,  
+           labels=paste0(p2(qnorm(b)),"xSE=", p2(qnorm(b)*se), ""),cex= cex2) #se
+      
+      #total
+      arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
+      text(x=   mu1+(mu2-mu1)/2 , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+                                                             p2(mu2-mu1), ""),cex= cex2)
+      
+      legend(x=mu1-5*se , .4*fact ,  "Legend:",
+             legend=c(
+               expression(paste("Power (1-",beta,")")),
+               expression(paste("Type II error (",beta,")   ")),
+               expression(paste("Type I error (",alpha,")"))),
+             fill=c("green","forestgreen","red"),
+             cex=1, bty = "n")
+      
+    } else {
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+      upper = mu1+6*se                         # for plotting
+      lower = mu2-6*se    
+      x <- seq(-7*se, 6*se, 0.01)  
+      num <- dnorm(x, mean =0, sd= 1)
+      y <-   dnorm(x, mean =0, sd= se)
+      fact <- 1/(max(num)/max(y))              # helps with plotting
+      se.for.plot <- se                        # helps with plotting
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to = upper , 
+            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            col='red',
+            ylab='',xlab='Treatment Effect', 
+            
+            main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+                       pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
+            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")           
+      
+      curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+      
+      xx <-      seq(  mu1+qnorm(a)*se, upper,   by=gap) # null upper limit  -> 
+      xxx <-     seq(  mu1+qnorm(a)*se, upper,  by=gap) # -> null upper limit
+      xxxx <-    seq(  lower, mu1-qnorm(a)*se,   by=gap) # -> null lower limit
+      xxxxx <-     seq(  lower, mu1+qnorm(a)*se,   by=gap) # -> null upper limit
+      
+      # type I error
+      polygon(x = c(mu1+qnorm(a)*se,                           xx,  upper),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xx),     0),
+              col="red")
+      
+      #type II error 
+      polygon(x = c(lower,                           xxxxx,  mu2+qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,      xxxxx),    0),
+              col="forestgreen")
+      
+      # power
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,     xxxx),     0),
+              col="lightgreen")
+      
+      # type I error
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xxxx),     0),
+              col="red")
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      abline(v= mu1-qnorm(a)*(se), col="blue",  lwd=1,  lty=3) 
+      abline(v= mu2,               col="blue",  lwd=1,  lty=3)
+      abline(v= mu1,               col="blue",  lwd=1,  lty=3)  
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # +/-se
+      text(x=mu1,y=.26*fact,  labels=paste0("SE =  +/- ",p2(se),""),cex= cex2)
+      arrows( mu1, .24*fact,  mu1+se, .24*fact, col = 1:3, code=2)
+      arrows( mu1, .24*fact,  mu1-se, .24*fact, col = 1:3)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # typeI
+      arrows(mu1, .3*fact, mu1-qnorm(a)*(se), .3*fact, col = "red")
+      text(x=mu1-qnorm(a)*(se)/2, y=.32*fact,  labels=paste0( p2(qnorm(a))   ,
+                                                              "xSE= ", p2(qnorm(a)*(se)), ""),cex= cex2)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # type II
+      if (b>0.5) {  
+        arrows(mu2 , .20*fact, mu1-qnorm(a)*se, .20*fact,    col = "blue", lwd=1.5)
+      } else {
+        arrows(mu1-qnorm(a)*se , .20*fact, mu2 , .20*fact,    col = "blue", lwd=1.5)
+      }
+      
+      text(x=   mu2+(qnorm(b)*se)/2, y=.18*fact,  
+           labels=paste0(p2(qnorm(b)),"xSE= ", p2(qnorm(b)*se), ""),cex= cex2)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # total
+      arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
+      text(x= mu1-  abs(muDiff/2) , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+                                                               p2(se*qnorm(a)+qnorm(b)*se), ""),cex= cex2)
+      
+      legend(x=mu1-7*se  , .35*fact ,  "Legend:",
+             legend=c(
+               expression(paste("Power (1-",beta,")")),
+               expression(paste("Type II error (",beta,")   ")),
+               expression(paste("Type I error (",alpha,")"))),
+             fill=c("green","forestgreen","red"),
+             cex=1, bty = "n")
+    }
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+  }) 
+  
+  
+  # teaching tab, repeat of teach plot code
+  output$gelman2<- renderPlot({ 
+    
+    mu1 <- as.numeric(unlist(strsplit(input$mu1bg,",")))
+    
+    mu2 <- as.numeric(unlist(strsplit(input$mu2bg,",")))
+    
+    alpha <- as.numeric(unlist(strsplit(input$alphabg,",")))
+    
+    beta <- as.numeric(unlist(strsplit(input$betabg,",")))
+    
+    std1 <- as.numeric(unlist(strsplit(input$stdbg,",")))
+    
+    muDiff  <-  mu2-mu1   
+    
+    A <- alpha  
+    B <- beta   
+    
+    gap <- 0.001
+    cex1 <- 1   # font size
+    cex2 <- 1   
+    
+    a <- 1-A/2
+    b <- 1-B  
+    
+    crit1 <- qnorm(1-as.numeric(alpha/2))
+    
+    n <-ceiling((2*(crit1 + qnorm(1-beta) )^2 ) / ((muDiff)/std1)^2 )
+    
+    se <- sqrt(std1^2/n + std1^2/n)  # se. of diff.
+    
+    if (muDiff > 0) {
+      
+      ###################################################################################################
+      ###################################################################################################
+      ###################################################################################################
+      lower = mu1-6*se                         # for plotting
+      upper = mu2+6*se                         # for plotting
+      x <- seq(-6*se, 6*se, 0.01)              # for dnorm
+      num <- dnorm(x, mean =0, sd= 1)          # helps with plotting
+      y <-   dnorm(x, mean =0, sd= se)         # helps with plotting
+      fact <- 1/(max(num)/max(y))              # helps with plotting
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      curve(dnorm(x, mean =mu1, sd= se),  xaxs="i", from = lower , to =upper ,  
+            bty="n",yaxt="n",lwd=2, # xaxt="n", 
+            col='red',
+            ylab='',xlab='Treatment Effect', 
+            
+            main=paste("Figure 5: Sampling distribution of the null in red, mean=",p2(mu1),"& alternative hypothesised treatment effect",p2(muDiff),"
+                       pop sd=",std1,", se=",p2(se), ", alpha=",A, ", power=",1-B,", N total=",n*2,sep=" ")
+            , sub="When power > 0.5, Red arrow = alpha; black arrow = alpha + beta; blue = beta")       
+      
+      curve(dnorm(x, mean =  mu2, sd=se), lwd=2, add=TRUE , xlab='Treatment Effect', col="forestgreen")
+      
+      xx <-      seq(  mu1+qnorm(a)*se, upper,   by=gap) # null upper limit  -> 
+      xxx <-     seq(  lower, mu1+qnorm(a)*se,   by=gap) # -> null upper limit
+      xxxx <-    seq(  lower, mu1-qnorm(a)*se,   by=gap) # -> null lower limit
+      
+      # power
+      polygon(x = c(mu1+qnorm(a)*se,                           xx,  upper),
+              y = c(0 , dnorm(mean=mu2, sd=se,     xx),     0),
+              col="lightgreen")
+      
+      # type I error
+      polygon(x = c(mu1+qnorm(a)*se,                       xx,  upper),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xx),     0),
+              col="red")
+      
+      # type I error
+      polygon(x = c(lower,                         xxxx,   mu1-qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu1, sd=se,     xxxx),     0),
+              col="red")
+      
+      #type II error area, beta
+      polygon(x = c(lower,                           xxx,  mu1+qnorm(a)*se),
+              y = c(0 , dnorm(mean=mu2, sd=se,      xxx),    0),
+              col="forestgreen")
+      
+      abline(v= mu1+qnorm(a)*se,   col="blue",  lwd=1,  lty=3)   # meeting of power and alpha level
+      abline(v= mu2,               col="blue",  lwd=1,  lty=3)   # alt hyp
+      abline(v= mu1,               col="blue",  lwd=1,  lty=3)  # null
+      
+      #adding arrows
+      # +/-se
+      text( x=mu1,y=.26*fact,  labels=paste0("SE =  +/- ",p2(se),""),cex= cex2)
+      arrows( mu1,  .24*fact,  mu1+se, .24*fact, col = 1:3, code=2)
+      arrows( mu1,  .24*fact,  mu1-se, .24*fact, col = 1:3)
+      
+      # type I
+      arrows(mu1, .3*fact, mu1+qnorm(a)*(se), .3*fact, col = "red")
+      text(x=mu1+qnorm(a)*(se)/2, y=.32*fact,  
+           labels=paste0( p2(qnorm(a)),"xSE= ", p2(qnorm(a)*(se)), ""),cex= cex2)
+      
+      # typeII
+      if (b<0.5) { 
+        arrows(mu1+qnorm(a)*(se), .2*fact,   mu2, .2*fact, col = "blue", lwd=1.5)
+      } else {
+        arrows(mu2, .2*fact,   mu1+qnorm(a)*(se), .2*fact, col = "blue", lwd=1.5)
+      }
+      text(x= mu2-( +se*qnorm(b))/2, y=.18*fact,  
+           labels=paste0(p2(qnorm(b)),"xSE=", p2(qnorm(b)*se), ""),cex= cex2) #se
+      
+      #total
+      arrows( mu1, .35*fact, mu2, .35*fact, col = 1:3)
+      text(x=   mu1+(mu2-mu1)/2 , y=.38*fact,  labels=paste0(p2(qnorm(a)+qnorm(b)),"xSE= ", 
+                                                             p2(mu2-mu1), ""),cex= cex2)
+      
+      legend(x=mu1-5*se , .4*fact ,  "Legend:",
+             legend=c(
+               expression(paste("Power (1-",beta,")")),
+               expression(paste("Type II error (",beta,")   ")),
+               expression(paste("Type I error (",alpha,")"))),
+             fill=c("green","forestgreen","red"),
+             cex=1, bty = "n")
       
     } else {
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
